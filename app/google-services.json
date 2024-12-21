@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "80154347619",
+    "project_id": "jgb78o8",
+    "storage_bucket": "jgb78o8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:80154347619:android:f169cf1b6b860c295d9056",
+        "android_client_info": {
+          "package_name": "com.safiya.photogallery"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC715qKk_LDdkswjdaAC-vSSsxYHGbWT-Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

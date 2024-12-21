@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">PhotoGallery</string>
+    <string name="home">Main</string>
+    <string name="folder">Folder</string>
+    <string name="filter">Filters</string>
+    <string name="add">Add</string>
+    <string name="album_image">Album name</string>
+    <string name="search">Enter name</string>
+
+</resources>
