@@ -40,19 +40,19 @@ class OpenedAlbumActivity : AppCompatActivity() {
         // Получите список идентификаторов изображений
         val photos = getPhotosForAlbum(album) // Реализуйте метод для получения списка идентификаторов
 
-        // Проверьте наличие фотографий
-        if (photos.isEmpty()) {
-            noPhotosText.visibility = View.VISIBLE
-        } else {
-            noPhotosText.visibility = View.GONE
-            photosAdapter = PhotoAdapter(this, photos) // Передаем контекст и список идентификаторов
-            recyclerView.adapter = photosAdapter
-        }
-
-        // Обработчик нажатия на кнопку "Назад"
-        backButton.setOnClickListener {
-            finish() // Завершает текущую активность и возвращает к предыдущей
-        }
+//        // Проверьте наличие фотографий
+//        if (photos.isEmpty()) {
+//            noPhotosText.visibility = View.VISIBLE
+//        } else {
+//            noPhotosText.visibility = View.GONE
+//            photosAdapter = PhotoAdapter(this, photos) // Передаем контекст и список идентификаторов
+//            recyclerView.adapter = photosAdapter
+//        }
+//
+//        // Обработчик нажатия на кнопку "Назад"
+//        backButton.setOnClickListener {
+//            finish() // Завершает текущую активность и возвращает к предыдущей
+//        }
     }
 
     private fun getPhotosForAlbum(album: Album?): List<Int> {
