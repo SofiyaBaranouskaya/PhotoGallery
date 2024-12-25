@@ -1,20 +1,15 @@
 package com.safiya.photogallery
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.ExifInterface
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -26,7 +21,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -53,9 +47,34 @@ class MainActivity : AppCompatActivity() {
         }
 
         noPhotosMessage = findViewById(R.id.no_photos_message)
+        val iconHome: ImageView = findViewById(R.id.icon_home)
+        val iconFolder: ImageView = findViewById(R.id.icon_folder)
+        val iconFilter: ImageView = findViewById(R.id.icon_filter)
         val iconAdd: ImageView = findViewById(R.id.icon_add)
 
+        // Устанавливаем начальные изображения для иконок
+        iconHome.setImageResource(R.drawable.home_violet)
+        iconFolder.setImageResource(R.drawable.folder_black)
+        iconFilter.setImageResource(R.drawable.filtr_black)
         iconAdd.setImageResource(R.drawable.add_black)
+
+        // Устанавливаем обработчики нажатий
+        iconHome.setOnClickListener {
+
+        }
+
+        iconFolder.setOnClickListener {
+            startActivity(Intent(this, AlbumsActivity::class.java))
+            overridePendingTransition(0, 0) // Отключаем анимацию
+        }
+
+        iconFilter.setOnClickListener {
+            startActivity(Intent(this, FiltersActivity::class.java))
+            overridePendingTransition(0, 0) // Отключаем анимацию
+        }
+
+
+
 
         iconAdd.setOnClickListener {
             showAddOptionsDialog()
