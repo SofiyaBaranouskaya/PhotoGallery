@@ -49,10 +49,10 @@ class OpenedAlbumActivity : AppCompatActivity() {
 //            recyclerView.adapter = photosAdapter
 //        }
 //
-//        // Обработчик нажатия на кнопку "Назад"
-//        backButton.setOnClickListener {
-//            finish() // Завершает текущую активность и возвращает к предыдущей
-//        }
+        // Обработчик нажатия на кнопку "Назад"
+        backButton.setOnClickListener {
+            finish() // Завершает текущую активность и возвращает к предыдущей
+        }
     }
 
     private fun getPhotosForAlbum(album: Album?): List<Int> {

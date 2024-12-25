@@ -257,14 +257,26 @@
 
     </androidx.cardview.widget.CardView>
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="371dp"
+        android:layout_height="423dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="30dp"
+        app:layout_constraintBottom_toTopOf="@+id/second_filter_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/opened_first_container"
+        android:visibility="gone"/>
+
     <androidx.cardview.widget.CardView
         android:id="@+id/second_filter_container"
         android:layout_width="320dp"
         android:layout_height="60dp"
-        android:layout_marginTop="30dp"
         android:background="@color/white"
         android:gravity="center"
         app:cardBackgroundColor="#ffffff"
+        android:layout_marginTop="30dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="4dp"
         app:layout_constraintEnd_toEndOf="parent"

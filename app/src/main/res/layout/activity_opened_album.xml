@@ -9,9 +9,9 @@
     <ImageView
         android:id="@+id/backButton"
         android:layout_width="25dp"
-        android:layout_height="25dp"
+        android:layout_height="65dp"
         android:layout_margin="16dp"
-        android:layout_marginStart="10dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="20dp"
         android:contentDescription="The album name here"
         android:src="@drawable/left_narrow"
