@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 class PhotoAdapter(
     private val context: Context,
-    private val photoList: List<Photo>,
+    private var photoList: MutableList<Photo>, // Изменяем на MutableList для обновления
     private val onDeleteClick: () -> Unit
 ) : RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
 
@@ -20,7 +20,6 @@ class PhotoAdapter(
 
         init {
             itemView.setOnClickListener {
-                val byteArray = photoList[adapterPosition].imageData
                 val intent = Intent(context, PhotoDetailActivity::class.java)
                 intent.putParcelableArrayListExtra("photoList", ArrayList(photoList)) // Передаем список фотографий
                 intent.putExtra("currentIndex", adapterPosition) // Передаем текущий индекс
@@ -36,8 +35,16 @@ class PhotoAdapter(
 
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
         val photo = photoList[position]
-        holder.imageView.setImageBitmap(BitmapFactory.decodeByteArray(photo.imageData, 0, photo.imageData.size))
+        val bitmap = BitmapFactory.decodeFile(photo.imagePath) // Используем путь к изображению
+        holder.imageView.setImageBitmap(bitmap)
     }
 
     override fun getItemCount(): Int = photoList.size
+
+    // Метод для обновления данных в адаптере
+    fun updateData(newPhotoList: List<Photo>) {
+        photoList.clear()
+        photoList.addAll(newPhotoList)
+        notifyDataSetChanged()
+    }
 }

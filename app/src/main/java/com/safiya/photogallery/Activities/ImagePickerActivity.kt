@@ -59,7 +59,10 @@ class ImagePickerActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == GALLERY_REQUEST_CODE && resultCode == RESULT_OK) {
             data?.data?.let { uri ->
-                selectedImages.add(uri)
+                // Добавляем выбранное изображение в список
+                if (!selectedImages.contains(uri)) {
+                    selectedImages.add(uri)
+                }
                 (gridView.adapter as ImageAdapter).notifyDataSetChanged()
             }
         }
@@ -67,12 +70,34 @@ class ImagePickerActivity : AppCompatActivity() {
 
     private fun addPhotosToDatabase() {
         selectedImages.forEach { uri ->
-            val imageData = contentResolver.openInputStream(uri)?.readBytes() ?: ByteArray(0)
-            val photo = Photo(0, deviceId, System.currentTimeMillis().toString(), imageData, "", arrayOf())
-            photoRepository.insertPhoto(photo)
+            val imagePath = uriToFile(uri)
+            if (imagePath.isNotEmpty()) {
+                val photo = Photo(
+                    id = 0,
+                    deviceId = deviceId,
+                    createdAt = System.currentTimeMillis().toString(),
+                    imagePath = imagePath,
+                    title = "",
+                    tags = arrayOf()
+                )
+                photoRepository.insertPhoto(photo)
+            } else {
+                Toast.makeText(this, "Unable to get path for image", Toast.LENGTH_SHORT).show()
+            }
         }
         Toast.makeText(this, "Photos added", Toast.LENGTH_SHORT).show()
         finish() // Закрываем Activity
+    }
+
+    private fun uriToFile(uri: Uri): String {
+        // Метод для получения пути к файлу из Uri
+        val cursor = contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+            it.moveToFirst()
+            return it.getString(columnIndex) // Возвращаем путь к файлу
+        }
+        return "" // Возвращаем пустую строку, если не удалось получить путь
     }
 
     companion object {

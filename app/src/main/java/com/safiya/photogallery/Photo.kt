@@ -7,7 +7,7 @@ data class Photo(
     val id: Long,
     val deviceId: String,
     val createdAt: String,
-    val imageData: ByteArray,
+    val imagePath: String, // Изменено на путь к файлу
     val title: String,
     val tags: Array<String>
 ) : Parcelable {
@@ -15,7 +15,7 @@ data class Photo(
         parcel.readLong(),
         parcel.readString() ?: "",
         parcel.readString() ?: "",
-        parcel.createByteArray() ?: ByteArray(0),
+        parcel.readString() ?: "", // Обновлено для чтения строки пути
         parcel.readString() ?: "",
         parcel.createStringArray() ?: arrayOf()
     )
@@ -24,7 +24,7 @@ data class Photo(
         parcel.writeLong(id)
         parcel.writeString(deviceId)
         parcel.writeString(createdAt)
-        parcel.writeByteArray(imageData)
+        parcel.writeString(imagePath) // Обновлено для записи строки пути
         parcel.writeString(title)
         parcel.writeStringArray(tags)
     }

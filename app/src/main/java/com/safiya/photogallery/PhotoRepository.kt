@@ -1,8 +1,10 @@
 package com.safiya.photogallery
 
 import android.content.ContentValues
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
+import android.util.Log
 
 class PhotoRepository(private val dbHelper: FeedReaderDbHelper) {
 
@@ -14,34 +16,42 @@ class PhotoRepository(private val dbHelper: FeedReaderDbHelper) {
             BaseColumns._ID,
             FeedReaderContract.PhotoEntry.COLUMN_NAME_DEVICE_ID,
             FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT,
-            FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_DATA,
+            FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH, // Изменено на путь к файлу
             FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE,
             FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS
         )
 
-        val cursor = db.query(
-            FeedReaderContract.PhotoEntry.TABLE_NAME,
-            projection,
-            null, // no selection
-            null, // no selection args
-            null, // don't group the rows
-            null, // don't filter by row groups
-            null  // the sort order
-        )
+        var cursor: Cursor? = null
+        try {
+            cursor = db.query(
+                FeedReaderContract.PhotoEntry.TABLE_NAME,
+                projection,
+                null,
+                null,
+                null,
+                null,
+                null
+            )
 
-        with(cursor) {
-            while (moveToNext()) {
-                val id = getLong(getColumnIndexOrThrow(BaseColumns._ID))
-                val deviceId = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_DEVICE_ID))
-                val createdAt = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT))
-                val imageData = getBlob(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_DATA))
-                val title = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE))
-                val tagsString = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS))
-                val tags = tagsString.split(",").toTypedArray() // Преобразуем строку в массив
+            if (cursor != null && cursor.count > 0) {
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(cursor.getColumnIndexOrThrow(BaseColumns._ID))
+                    val deviceId = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_DEVICE_ID))
+                    val createdAt = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT))
+                    val imagePath = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH)) // Изменено на путь к файлу
+                    val title = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE))
+                    val tagsString = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS))
+                    val tags = tagsString.split(",").toTypedArray()
 
-                photos.add(Photo(id, deviceId, createdAt, imageData, title, tags))            }
+                    photos.add(Photo(id, deviceId, createdAt, imagePath, title, tags))
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("PhotoRepository", "Error fetching photos", e)
+        } finally {
+            cursor?.close()
         }
-        cursor.close()
+
         return photos
     }
 
@@ -50,9 +60,9 @@ class PhotoRepository(private val dbHelper: FeedReaderDbHelper) {
         val values = ContentValues().apply {
             put(FeedReaderContract.PhotoEntry.COLUMN_NAME_DEVICE_ID, photo.deviceId)
             put(FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT, photo.createdAt)
-            put(FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_DATA, photo.imageData)
+            put(FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH, photo.imagePath) // Измените это
             put(FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE, photo.title)
-            put(FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS, photo.tags.joinToString(",")) // Преобразуем массив в строку
+            put(FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS, photo.tags.joinToString(","))
         }
 
         db.insert(FeedReaderContract.PhotoEntry.TABLE_NAME, null, values)

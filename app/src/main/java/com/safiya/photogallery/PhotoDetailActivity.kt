@@ -1,8 +1,8 @@
 package com.safiya.photogallery
 
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 
@@ -49,8 +49,8 @@ class PhotoDetailActivity : AppCompatActivity() {
     }
 
     private fun loadPhoto() {
-        val byteArray = photoList[currentIndex].imageData
-        val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        val imagePath = photoList[currentIndex].imagePath // Используем путь к изображению
+        val bitmap = BitmapFactory.decodeFile(imagePath) // Декодируем изображение из файла
         imageView.setImageBitmap(bitmap)
     }
 }
