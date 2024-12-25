@@ -50,8 +50,7 @@ class FeedReaderDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 val tagsString = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS))
                 val tags = tagsString.split(",").toTypedArray() // Преобразуем строку в массив
 
-                photos.add(Photo(id.toInt(), deviceId, createdAt, imageData, title, tags))
-            }
+                photos.add(Photo(id, deviceId, createdAt, imageData, title, tags))            }
         }
         cursor.close()
         return photos

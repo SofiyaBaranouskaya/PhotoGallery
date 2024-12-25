@@ -77,10 +77,7 @@ class MainActivity : AppCompatActivity() {
         builder.setTitle("Choose option")
         builder.setItems(options) { dialog, which ->
             when (which) {
-                0 -> {
-                    // Логика для добавления фотографий (открытие камеры)
-                    openCamera()
-                }
+                0 -> openCamera()
                 1 -> {
                     // Логика для добавления альбома
                 }
@@ -104,7 +101,7 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
             val imageBitmap = data?.extras?.get("data") as? Bitmap
             imageBitmap?.let {
-                showPhotoDetailsDialog(it) // Показываем диалог для ввода деталей
+                showPhotoDetailsDialog(it)
             }
         }
     }
@@ -129,28 +126,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun savePhotoToDatabase(imageBitmap: Bitmap, title: String, tags: String) {
-        // Преобразуем Bitmap в массив байтов
         val byteArrayOutputStream = ByteArrayOutputStream()
         imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
         val imageData = byteArrayOutputStream.toByteArray()
 
-        // Получаем deviceId
         val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
-        // Создаем объект Photo
         val photo = Photo(
-            id = 0, // ID будет сгенерирован автоматически
+            id = 0,
             deviceId = deviceId,
             createdAt = System.currentTimeMillis().toString(),
             imageData = imageData,
             title = title,
-            tags = tags.split(",").toTypedArray() // Разделение тегов на массив
+            tags = tags.split(",").toTypedArray()
         )
 
-        // Сохраняем фото в базе данных
         photoRepository.insertPhoto(photo)
 
-        // Обновляем RecyclerView
         setupRecyclerView()
     }
 
