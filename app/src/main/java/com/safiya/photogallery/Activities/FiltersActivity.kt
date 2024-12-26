@@ -12,9 +12,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.safiya.photogallery.Adapters.FilterPhotoAdapter
@@ -123,6 +125,17 @@ class FiltersActivity : AppCompatActivity() {
 
             // Показать RecyclerView, если есть фотографии
             recyclerView5.visibility = if (filteredPhotos.isNotEmpty()) View.VISIBLE else View.GONE
+            // Отображение textView10 в зависимости от результатов
+            val textView10: TextView = findViewById(R.id.textView10)
+            if (filteredPhotos.isEmpty()) {
+                textView10.visibility = View.VISIBLE
+            } else {
+                textView10.visibility = View.GONE
+            }
+            // Скрыть textView10, если поле для ввода тегов пустое
+            if (tagsInput.isEmpty()) {
+                textView10.visibility = View.GONE
+            }
         }
     }
 
@@ -200,6 +213,23 @@ class FiltersActivity : AppCompatActivity() {
             noPhotosTextView.visibility = View.GONE
             recyclerView.visibility = View.VISIBLE
         }
+
+        // Обновляем привязку second_filter_container в зависимости от видимости
+        updateSecondFilterContainerConstraints(noPhotosTextView.isVisible, recyclerView.isVisible)
+    }
+
+    private fun updateSecondFilterContainerConstraints(isNoPhotosVisible: Boolean, isPhotosVisible: Boolean) {
+        val secondFilterContainer: View = findViewById(R.id.second_filter_container)
+        val layoutParams = secondFilterContainer.layoutParams as ConstraintLayout.LayoutParams
+
+        if (isNoPhotosVisible) {
+            layoutParams.topToBottom = R.id.textView9
+        } else if (isPhotosVisible) {
+            layoutParams.topToBottom = R.id.recyclerView3
+        }
+
+        secondFilterContainer.layoutParams = layoutParams
+        secondFilterContainer.requestLayout()
     }
 
     private fun cancelChanges() {
@@ -214,19 +244,26 @@ class FiltersActivity : AppCompatActivity() {
         dateFiltrText.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
 
         val noPhotosTextView: TextView = findViewById(R.id.textView9)
-        noPhotosTextView.visibility = View.GONE
+        val recyclerView: RecyclerView = findViewById(R.id.recyclerView3)
 
+        // Скрываем textView9 и recyclerView3 при отмене
+        noPhotosTextView.visibility = View.GONE
+        recyclerView.visibility = View.GONE
+
+        // Получаем все фотографии
         val allPhotos = getPhotosByDateRange(null, null)
         photoAdapter.updateData(allPhotos)
 
         // Показать или скрыть сообщения о фотографиях
         if (allPhotos.isEmpty()) {
-            noPhotosTextView.visibility = View.VISIBLE
-            recyclerView.visibility = View.GONE
-        } else {
+            // Здесь мы не показываем noPhotosTextView, так как он уже скрыт
             noPhotosTextView.visibility = View.GONE
+        } else {
             recyclerView.visibility = View.VISIBLE
         }
+
+        // Обновляем привязку второго контейнера
+        updateSecondFilterContainerConstraints(noPhotosTextView.isVisible, recyclerView.isVisible)
     }
 
     private fun convertTimestampToDateString(timestamp: Long): String {

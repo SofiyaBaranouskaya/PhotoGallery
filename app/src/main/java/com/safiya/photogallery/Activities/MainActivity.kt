@@ -73,9 +73,6 @@ class MainActivity : AppCompatActivity() {
             overridePendingTransition(0, 0) // Отключаем анимацию
         }
 
-
-
-
         iconAdd.setOnClickListener {
             showAddOptionsDialog()
         }
