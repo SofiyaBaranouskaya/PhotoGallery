@@ -243,7 +243,7 @@
             android:gravity="center"
             android:text="Choose dates"
             android:textAlignment="center"
-            android:textColor="@color/black"
+            android:textColor="@android:color/darker_gray"
             android:textSize="20dp" />
 
         <ImageView
@@ -269,6 +269,20 @@
         android:visibility="gone"
         android:scrollbars="horizontal"/>
 
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="There are no photo made these dates"
+        android:visibility="gone"
+        android:textSize="30dp"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/opened_first_container" />
+
     <androidx.cardview.widget.CardView
         android:id="@+id/second_filter_container"
         android:layout_width="320dp"
@@ -282,19 +296,21 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.492"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recyclerView3">
+        app:layout_constraintTop_toBottomOf="@+id/textView9">
 
-        <TextView
-            android:id="@+id/AlbumFiltrText"
+        <EditText
+            android:id="@+id/editTextAlbums"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="20dp"
+            android:ems="10"
+            android:inputType="text"
             android:fontFamily="@font/coming_soon"
-            android:gravity="center"
-            android:text="Enter album name ..."
-            android:textAlignment="center"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="20dp" />
+            android:textColor="@android:color/black"
+            android:hint="Enter album name ..."
+            android:textColorHint="@android:color/darker_gray"
+            android:padding="0dp"
+            android:background="@android:color/transparent" />
 
         <ImageView
             android:id="@+id/imageView1"
@@ -306,6 +322,17 @@
 
 
     </androidx.cardview.widget.CardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView4"
+        android:layout_width="340dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="12dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/second_filter_container"
+        android:visibility="gone"
+        android:scrollbars="horizontal"/>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/third_filter_container"
@@ -322,17 +349,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/second_filter_container">
 
-        <TextView
-            android:id="@+id/TagsFiltrText"
+        <EditText
+            android:id="@+id/editTextTags"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="20dp"
+            android:ems="10"
+            android:inputType="text"
             android:fontFamily="@font/coming_soon"
-            android:gravity="center"
-            android:text="Enter #tags ..."
-            android:textAlignment="center"
-            android:textColor="@android:color/darker_gray"
-            android:textSize="20dp" />
+            android:textColor="@android:color/black"
+            android:hint="Enter tags ..."
+            android:textColorHint="@android:color/darker_gray"
+            android:padding="0dp"
+            android:background="@android:color/transparent" />
 
         <ImageView
             android:id="@+id/imageView2"
@@ -344,5 +373,16 @@
 
 
     </androidx.cardview.widget.CardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView5"
+        android:layout_width="340dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="12dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/third_filter_container"
+        android:visibility="gone"
+        android:scrollbars="horizontal"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

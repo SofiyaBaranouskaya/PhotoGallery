@@ -12,9 +12,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.safiya.photogallery.Adapters.FilterPhotoAdapter
@@ -31,6 +31,7 @@ class FiltersActivity : AppCompatActivity() {
     private lateinit var iconCalendarSince: ImageView
     private lateinit var iconCalendarTo: ImageView
     private lateinit var recyclerView: RecyclerView
+    private lateinit var recyclerView5: RecyclerView
     private lateinit var photoAdapter: FilterPhotoAdapter
 
     private var startDate: String? = null
@@ -62,6 +63,12 @@ class FiltersActivity : AppCompatActivity() {
         photoAdapter = FilterPhotoAdapter(this, mutableListOf()) {}
         recyclerView.adapter = photoAdapter
         recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+
+        // Инициализация RecyclerView для тегов
+        recyclerView5 = findViewById(R.id.recyclerView5)
+        val tagPhotoAdapter = FilterPhotoAdapter(this, mutableListOf()) {}
+        recyclerView5.adapter = tagPhotoAdapter
+        recyclerView5.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
         // Устанавливаем обработчики нажатий
         iconHome.setOnClickListener {
@@ -105,6 +112,18 @@ class FiltersActivity : AppCompatActivity() {
         buttonCancel.setOnClickListener {
             cancelChanges()
         }
+
+        // Устанавливаем обработчик для поиска по тегам
+        val imageView2: ImageView = findViewById(R.id.imageView2)
+        imageView2.setOnClickListener {
+            val tagsFiltrText: TextView = findViewById(R.id.editTextTags)
+            val tagsInput = tagsFiltrText.text.toString().trim()
+            val filteredPhotos = getPhotosByTags(tagsInput)
+            tagPhotoAdapter.updateData(filteredPhotos)
+
+            // Показать RecyclerView, если есть фотографии
+            recyclerView5.visibility = if (filteredPhotos.isNotEmpty()) View.VISIBLE else View.GONE
+        }
     }
 
     private fun openDatePicker(editText: EditText, isStartDate: Boolean) {
@@ -131,7 +150,8 @@ class FiltersActivity : AppCompatActivity() {
 
     private fun confirmDates() {
         val dateFiltrText: TextView = findViewById(R.id.dateFiltrText)
-        val currentDate = System.currentTimeMillis() // Текущая дата в формате Unix timestamp
+        val noPhotosTextView: TextView = findViewById(R.id.textView9)
+        val currentDate = System.currentTimeMillis()
 
         // Конвертация введенных дат в timestamp
         val startTimestamp = startDate?.let { convertToTimestamp(it) }
@@ -156,15 +176,57 @@ class FiltersActivity : AppCompatActivity() {
             else -> "Choose dates"
         }
 
+        // Установка цвета текста
+        dateFiltrText.setTextColor(
+            if (dateFiltrText.text == "Choose dates") {
+                ContextCompat.getColor(this, android.R.color.darker_gray)
+            } else {
+                ContextCompat.getColor(this, android.R.color.black)
+            }
+        )
+
         // Обработка конечной даты для включения всего дня
-        val adjustedEndTimestamp = endTimestamp?.plus(24 * 60 * 60 * 1000 - 1) // Добавить почти целый день
+        val adjustedEndTimestamp = endTimestamp?.plus(24 * 60 * 60 * 1000 - 1)
 
         // Получение фотографий за выбранный период
         val photos = getPhotosByDateRange(startDate, adjustedEndTimestamp?.let { convertTimestampToDateString(it) })
         photoAdapter.updateData(photos)
 
-        // Показать RecyclerView, если есть фотографии
-        recyclerView.visibility = if (photos.isNotEmpty()) View.VISIBLE else View.GONE
+        // Показать или скрыть сообщения о фотографиях
+        if (photos.isEmpty()) {
+            noPhotosTextView.visibility = View.VISIBLE
+            recyclerView.visibility = View.GONE
+        } else {
+            noPhotosTextView.visibility = View.GONE
+            recyclerView.visibility = View.VISIBLE
+        }
+    }
+
+    private fun cancelChanges() {
+        openedFirstContainer.visibility = View.GONE
+        editTextDate.setText("")
+        editTextDate2.setText("")
+        startDate = null
+        endDate = null
+
+        val dateFiltrText: TextView = findViewById(R.id.dateFiltrText)
+        dateFiltrText.text = "Choose dates"
+        dateFiltrText.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+
+        val noPhotosTextView: TextView = findViewById(R.id.textView9)
+        noPhotosTextView.visibility = View.GONE
+
+        val allPhotos = getPhotosByDateRange(null, null)
+        photoAdapter.updateData(allPhotos)
+
+        // Показать или скрыть сообщения о фотографиях
+        if (allPhotos.isEmpty()) {
+            noPhotosTextView.visibility = View.VISIBLE
+            recyclerView.visibility = View.GONE
+        } else {
+            noPhotosTextView.visibility = View.GONE
+            recyclerView.visibility = View.VISIBLE
+        }
     }
 
     private fun convertTimestampToDateString(timestamp: Long): String {
@@ -178,49 +240,43 @@ class FiltersActivity : AppCompatActivity() {
         val db = dbHelper.readableDatabase
 
         if (start == null && end == null) {
-            return photos // No dates selected, return empty
+            return photos
         }
 
         val selection = StringBuilder()
         val selectionArgs = mutableListOf<String>()
 
-        // Преобразование введенных дат в Unix timestamp
         val startTimestamp = start?.let { convertToTimestamp(it) }
         var endTimestamp = end?.let { convertToTimestamp(it) }
 
-        // Добавление времени до конца дня для конечной даты
         if (endTimestamp != null) {
-            endTimestamp += 24 * 60 * 60 * 1000 - 1 // Увеличиваем на почти целый день
+            endTimestamp += 24 * 60 * 60 * 1000 - 1
         }
 
         when {
             startTimestamp != null && endTimestamp != null -> {
-                // Формат: 12.03.2024 - 14.03.2024
                 selection.append("${FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT} BETWEEN ? AND ?")
                 selectionArgs.add(startTimestamp.toString())
                 selectionArgs.add(endTimestamp.toString())
             }
             startTimestamp != null -> {
-                // Формат: 12.03.2024 - now
                 selection.append("${FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT} >= ?")
                 selectionArgs.add(startTimestamp.toString())
             }
             endTimestamp != null -> {
-                // Формат: start - 12.03.2024
                 selection.append("${FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT} <= ?")
                 selectionArgs.add(endTimestamp.toString())
             }
         }
 
-        // Запрос к базе данных
         val cursor = db.query(
             FeedReaderContract.PhotoEntry.TABLE_NAME,
-            null, // Get all columns
+            null,
             selection.toString(),
             selectionArgs.toTypedArray(),
-            null, // Group by
-            null, // Having
-            null  // Order by
+            null,
+            null,
+            null
         )
 
         with(cursor) {
@@ -240,33 +296,45 @@ class FiltersActivity : AppCompatActivity() {
         return photos
     }
 
+    private fun getPhotosByTags(tags: String): List<Photo> {
+        val dbHelper = FeedReaderDbHelper(this)
+        val photos = mutableListOf<Photo>()
+        val db = dbHelper.readableDatabase
+
+        if (tags.isEmpty()) return photos
+
+        val selection = "${FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS} LIKE ?"
+        val selectionArgs = arrayOf("%$tags%")
+
+        val cursor = db.query(
+            FeedReaderContract.PhotoEntry.TABLE_NAME,
+            null,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            null
+        )
+
+        with(cursor) {
+            while (moveToNext()) {
+                val id = getLong(getColumnIndexOrThrow(BaseColumns._ID))
+                val deviceId = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_DEVICE_ID))
+                val createdAt = getLong(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT))
+                val imagePath = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH))
+                val title = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE))
+                val tagsString = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS))
+                val tagsArray = tagsString.split(",").toTypedArray()
+
+                photos.add(Photo(id, deviceId, createdAt.toString(), imagePath, title, tagsArray))
+            }
+        }
+        cursor.close()
+        return photos
+    }
+
     private fun convertToTimestamp(dateString: String): Long {
         val format = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
         return format.parse(dateString)?.time ?: 0L
-    }
-
-    private fun cancelChanges() {
-        // Скрыть контейнер с датами
-        openedFirstContainer.visibility = View.GONE
-
-        // Сбросить текстовые поля для дат
-        editTextDate.setText("")
-        editTextDate2.setText("")
-
-        // Сбросить переменные для хранения дат
-        startDate = null
-        endDate = null
-
-        // Вернуть текст в dateFiltrText к исходному значению
-        val dateFiltrText: TextView = findViewById(R.id.dateFiltrText)
-        dateFiltrText.text = "Choose dates" // Или любое другое исходное значение
-        dateFiltrText.setTextColor(resources.getColor(R.color.black)) // Убедитесь, что цвет возвращается к исходному
-
-        // Получить все фотографии (без фильтрации)
-        val allPhotos = getPhotosByDateRange(null, null)
-        photoAdapter.updateData(allPhotos)
-
-        // Скрыть RecyclerView, если нет фотографий
-        recyclerView.visibility = if (allPhotos.isNotEmpty()) View.VISIBLE else View.GONE
     }
 }
