@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.safiya.photogallery.Adapters.FilterPhotoAdapter
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -30,7 +31,7 @@ class FiltersActivity : AppCompatActivity() {
     private lateinit var iconCalendarSince: ImageView
     private lateinit var iconCalendarTo: ImageView
     private lateinit var recyclerView: RecyclerView
-    private lateinit var photoAdapter: PhotoAdapter
+    private lateinit var photoAdapter: FilterPhotoAdapter
 
     private var startDate: String? = null
     private var endDate: String? = null
@@ -58,9 +59,9 @@ class FiltersActivity : AppCompatActivity() {
 
         // Инициализация RecyclerView
         recyclerView = findViewById(R.id.recyclerView3)
-        photoAdapter = PhotoAdapter(this, mutableListOf()) {} // Пустой лямбда, если не требуется обработка клика
+        photoAdapter = FilterPhotoAdapter(this, mutableListOf()) {}
         recyclerView.adapter = photoAdapter
-        recyclerView.layoutManager = GridLayoutManager(this, 5)
+        recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
         // Устанавливаем обработчики нажатий
         iconHome.setOnClickListener {
