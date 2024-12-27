@@ -1,10 +1,11 @@
-package com.safiya.photogallery
+package com.safiya.photogallery.Activities
 
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import com.safiya.photogallery.Photo
+import com.safiya.photogallery.R
 
 class PhotoDetailActivity : AppCompatActivity() {
 

@@ -21,6 +21,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.safiya.photogallery.Activities.SelectPhotosActivity
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -116,7 +117,8 @@ class MainActivity : AppCompatActivity() {
             when (which) {
                 0 -> openCamera()
                 1 -> {
-                    // Логика для добавления альбома
+                    // Переход к активности выбора фотографий
+                    startActivity(Intent(this, SelectPhotosActivity::class.java))
                 }
             }
         }

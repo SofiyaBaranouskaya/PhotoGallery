@@ -22,13 +22,20 @@ class AlbumAdapter(
 
         fun bind(album: Album) {
             // Загрузка изображения из ресурсов
-            albumImageView.setImageResource(album.imageResId)
+            // Предполагаем, что imageIds - это список идентификаторов изображений
+            if (album.imageIds.isNotEmpty()) {
+                // Замените 0 на нужный индекс или логику для выбора изображения
+                albumImageView.setImageResource(album.imageIds[0].toInt()) // Преобразование в Int
+            } else {
+                // Установите изображение по умолчанию или скрыть ImageView
+                albumImageView.setImageResource(R.drawable.album4) // Пример изображения по умолчанию
+            }
             albumTitleTextView.text = album.title
-            albumDateTextView.text = album.date
+            albumDateTextView.text = album.createdAt
 
             // Обработка нажатия на элемент
             itemView.setOnClickListener {
-                onAlbumClick(album) // Вызываем лямбда-функцию при нажатии
+                onAlbumClick(album)
             }
         }
     }

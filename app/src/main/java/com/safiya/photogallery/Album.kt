@@ -3,19 +3,22 @@ import android.os.Parcelable
 
 data class Album(
     val title: String,
-    val date: String,
-    val imageResId: Int // Например, идентификатор изображения
+    val createdAt: String,
+    val deviceId: String,
+    val imageIds: List<Long>
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
-        parcel.readInt() // Или другой тип, если необходимо
+        parcel.readString() ?: "", // deviceId
+        parcel.createLongArray()?.toList() ?: emptyList() // Преобразуем массив в список
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(title)
-        parcel.writeString(date)
-        parcel.writeInt(imageResId)
+        parcel.writeString(createdAt) // Дата создания
+        parcel.writeString(deviceId) // Идентификатор устройства
+        parcel.writeLongArray(imageIds.toLongArray()) // Преобразуем список в массив
     }
 
     override fun describeContents(): Int {

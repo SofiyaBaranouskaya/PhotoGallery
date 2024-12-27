@@ -16,6 +16,7 @@ class AlbumsActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var albumAdapter: AlbumAdapter
+    private lateinit var albumRepository: AlbumRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,15 +65,15 @@ class AlbumsActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.recyclerViewAlbums)
         recyclerView.layoutManager = GridLayoutManager(this, 2) // 2 колонки
 
-        // Создание списка альбомов (пример)
-        val albums = listOf(
-            Album("Название 1", "01.01.2023", R.drawable.album1), // Замените на реальные ресурсы
-            Album("Название 2", "02.01.2023", R.drawable.album2),
-            Album("Название 3", "03.01.2023", R.drawable.album3),
-            Album("Название 4", "04.01.2023", R.drawable.album4),
-            Album("Название 5", "02.01.2023", R.drawable.photo1),
-            Album("Название 6", "03.01.2023", R.drawable.photo2)
-        )
+        // Инициализация репозитория
+        albumRepository = AlbumRepository(FeedReaderDbHelper(this))
+
+        // Получаем альбомы из базы данных
+        val albums = albumRepository.getAllAlbums().map { album ->
+            // Используем photo1 как заставку для всех альбомов
+            album.copy(imageIds = listOf(R.drawable.photo1.toLong())) // Преобразуем в Long
+
+        }
 
         // Инициализация адаптера
         albumAdapter = AlbumAdapter(this, albums) { album -> // Передаем контекст

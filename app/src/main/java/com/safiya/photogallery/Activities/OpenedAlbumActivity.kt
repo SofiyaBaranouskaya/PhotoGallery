@@ -12,17 +12,17 @@ import androidx.recyclerview.widget.RecyclerView
 class OpenedAlbumActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var photosAdapter: PhotoAdapter // Ваш адаптер для фотографий
+    private lateinit var photosAdapter: PhotoAdapter
     private lateinit var noPhotosText: TextView
     private lateinit var backButton: ImageView
     private lateinit var albumTitle: TextView
     private lateinit var albumDate: TextView
+    private lateinit var albumRepository: AlbumRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_opened_album) // Убедитесь, что имя макета верное
+        setContentView(R.layout.activity_opened_album)
 
-        // Инициализируем элементы интерфейса
         recyclerView = findViewById(R.id.recyclerViewPhotos)
         noPhotosText = findViewById(R.id.noPhotosText)
         backButton = findViewById(R.id.backButton)
@@ -31,32 +31,47 @@ class OpenedAlbumActivity : AppCompatActivity() {
 
         // Получите данные альбома из Intent
         val album = intent.getParcelableExtra<Album>("ALBUM")
-        albumTitle.text = album?.title // Устанавливаем название альбома
-        albumDate.text = album?.date // Устанавливаем дату альбома
+        albumTitle.text = album?.title
+        albumDate.text = album?.createdAt
 
-        // Инициализация RecyclerView
         recyclerView.layoutManager = GridLayoutManager(this, 3)
+        albumRepository = AlbumRepository(FeedReaderDbHelper(this)) // Инициализация репозитория
 
-        // Получите список идентификаторов изображений
-        val photos = getPhotosForAlbum(album) // Реализуйте метод для получения списка идентификаторов
+        // Получаем список объектов Photo для альбома по названию и дате
+        album?.let {
+            val photos = fetchPhotosForAlbum(it)
 
-//        // Проверьте наличие фотографий
-//        if (photos.isEmpty()) {
-//            noPhotosText.visibility = View.VISIBLE
-//        } else {
-//            noPhotosText.visibility = View.GONE
-//            photosAdapter = PhotoAdapter(this, photos) // Передаем контекст и список идентификаторов
-//            recyclerView.adapter = photosAdapter
-//        }
-//
-        // Обработчик нажатия на кнопку "Назад"
+            if (photos.isEmpty()) {
+                noPhotosText.visibility = View.VISIBLE
+                recyclerView.visibility = View.GONE
+            } else {
+                noPhotosText.visibility = View.GONE
+                recyclerView.visibility = View.VISIBLE
+
+                photosAdapter = PhotoAdapter(this, photos.toMutableList()) {
+                    // Обновляем адаптер при удалении (если это нужно)
+                    photosAdapter.updateData(fetchPhotosForAlbum(it))
+                }
+                recyclerView.adapter = photosAdapter
+            }
+        } ?: run {
+            noPhotosText.visibility = View.VISIBLE
+            recyclerView.visibility = View.GONE
+        }
+
         backButton.setOnClickListener {
-            finish() // Завершает текущую активность и возвращает к предыдущей
+            finish()
         }
     }
 
-    private fun getPhotosForAlbum(album: Album?): List<Int> {
-        // Реализуйте логику получения идентификаторов фотографий для данного альбома
-        return listOf(R.drawable.photo1, R.drawable.photo2, R.drawable.photo3) // Пример списка идентификаторов
+    private fun fetchPhotosForAlbum(album: Album): List<Photo> {
+        // Ищем альбом в базе данных по названию и дате создания
+        val allAlbums = albumRepository.getAllAlbums()
+        val matchedAlbum = allAlbums.find {
+            it.title == album.title && it.createdAt == album.createdAt
+        }
+
+        // Если альбом найден, получаем его фотографии
+        return matchedAlbum?.let { albumRepository.getPhotosForAlbum(it) } ?: emptyList()
     }
 }

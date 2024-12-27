@@ -1,7 +1,7 @@
 package com.safiya.photogallery.Adapters
 
 import com.safiya.photogallery.Photo
-import com.safiya.photogallery.PhotoDetailActivity
+import com.safiya.photogallery.Activities.PhotoDetailActivity
 import com.safiya.photogallery.R
 import android.content.Context
 import android.content.Intent

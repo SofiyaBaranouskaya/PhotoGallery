@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.safiya.photogallery.Activities.PhotoDetailActivity
 
 class PhotoAdapter(
     private val context: Context,

@@ -15,9 +15,11 @@
         android:theme="@style/Theme.PhotoGallery"
         tools:targetApi="31">
         <activity
-            android:name=".PhotoDetailActivity"
+            android:name=".Activities.SelectPhotosActivity"
             android:exported="false" />
-        <!-- <activity -->
+        <activity
+            android:name=".Activities.PhotoDetailActivity"
+            android:exported="false" /> <!-- <activity -->
         <!-- android:name=".Activities.ImagePickerActivity" -->
         <!-- android:exported="false" /> -->
         <activity
@@ -36,6 +38,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".AlbumsActivity" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

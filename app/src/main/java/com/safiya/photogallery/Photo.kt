@@ -7,9 +7,10 @@ data class Photo(
     val id: Long,
     val deviceId: String,
     val createdAt: String,
-    val imagePath: String, // Изменено на путь к файлу
+    val imagePath: String,
     val title: String,
-    val tags: Array<String>
+    val tags: Array<String>,
+    var isSelected: Boolean = false // Поле для отслеживания выбора
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readLong(),
