@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -26,8 +27,10 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
         android:text="Album name here"
+        android:fontFamily="@font/coming_soon"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:textColor="@color/white"
         app:layout_constraintStart_toEndOf="@+id/backButton"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -37,6 +40,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="62dp"
         android:text="12/12/2020"
+        android:fontFamily="@font/coming_soon"
         android:textColor="@android:color/darker_gray"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"

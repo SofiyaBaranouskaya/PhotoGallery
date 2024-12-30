@@ -35,9 +35,14 @@ class FiltersActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var recyclerView5: RecyclerView
     private lateinit var photoAdapter: FilterPhotoAdapter
-
+    private lateinit var editTextAlbumName: EditText
+    private lateinit var buttonSearchAlbum: ImageView
+    private lateinit var recyclerView4: RecyclerView
+    private lateinit var albumPhotoAdapter: FilterPhotoAdapter
+    private lateinit var textViewNoPhotos: TextView
     private var startDate: String? = null
     private var endDate: String? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +77,17 @@ class FiltersActivity : AppCompatActivity() {
         recyclerView5.adapter = tagPhotoAdapter
         recyclerView5.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
+        // Инициализация элементов
+        editTextAlbumName = findViewById(R.id.editTextAlbumName)
+        buttonSearchAlbum = findViewById(R.id.buttonSearchAlbum)
+        recyclerView4 = findViewById(R.id.recyclerView4)
+
+        // Инициализация адаптера для RecyclerView
+        albumPhotoAdapter = FilterPhotoAdapter(this, mutableListOf()) {}
+        recyclerView4.adapter = albumPhotoAdapter
+        recyclerView4.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        textViewNoPhotos = findViewById(R.id.textViewNoPhotos)
+
         // Устанавливаем обработчики нажатий
         iconHome.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
@@ -100,6 +116,40 @@ class FiltersActivity : AppCompatActivity() {
 
         iconCalendarTo.setOnClickListener {
             openDatePicker(editTextDate2, false)
+        }
+
+        buttonSearchAlbum.setOnClickListener {
+            val albumName = editTextAlbumName.text.toString().trim().toLowerCase() // Приводим к нижнему регистру
+
+            // Проверка на пустое поле
+            if (albumName.isEmpty()) {
+                // Скрываем recyclerView4 и textViewNoPhotos
+                recyclerView4.visibility = View.GONE
+                textViewNoPhotos.visibility = View.GONE
+                return@setOnClickListener // Выходим из метода
+            }
+
+            val imageIds = getImageIdsByAlbumName(albumName)
+            if (imageIds.isNotEmpty()) {
+                val photos = getPhotosByIds(imageIds)
+
+                if (photos.isNotEmpty()) {
+                    recyclerView4.visibility = View.VISIBLE
+                    textViewNoPhotos.visibility = View.GONE
+                    albumPhotoAdapter.updateData(photos)
+                } else {
+                    recyclerView4.visibility = View.GONE
+                    textViewNoPhotos.visibility = View.VISIBLE
+                    textViewNoPhotos.text = "There are no such album or it is empty"
+                }
+            } else {
+                recyclerView4.visibility = View.GONE
+                textViewNoPhotos.visibility = View.VISIBLE
+                textViewNoPhotos.text = "There are no such album   or it is empty"
+            }
+
+            // Обновление привязки третьего контейнера
+            updateThirdContainerConstraints(textViewNoPhotos.isVisible, recyclerView4.isVisible)
         }
 
         // Устанавливаем обработчик для кнопки "Confirm"
@@ -138,6 +188,66 @@ class FiltersActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun getPhotosByIds(imageIds: List<Long>): List<Photo> {
+        val dbHelper = FeedReaderDbHelper(this)
+        val db = dbHelper.readableDatabase
+        val photos = mutableListOf<Photo>()
+
+        // Используем `IN` для получения нескольких записей
+        val selection = "${BaseColumns._ID} IN (${imageIds.joinToString(",")})"
+
+        val cursor = db.query(
+            FeedReaderContract.PhotoEntry.TABLE_NAME,
+            null, // Получаем все колонки
+            selection,
+            null,
+            null,
+            null,
+            null
+        )
+
+        while (cursor.moveToNext()) {
+            val id = cursor.getLong(cursor.getColumnIndexOrThrow(BaseColumns._ID))
+            val deviceId = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_DEVICE_ID))
+            val createdAt = cursor.getLong(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT))
+            val imagePath = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH))
+            val title = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE))
+            val tagsString = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS))
+            val tags = tagsString.split(",").toTypedArray()
+
+            photos.add(Photo(id, deviceId, createdAt.toString(), imagePath, title, tags))
+        }
+        cursor.close()
+        return photos
+    }
+
+    private fun getImageIdsByAlbumName(albumName: String): List<Long> {
+        val dbHelper = FeedReaderDbHelper(this)
+        val db = dbHelper.readableDatabase
+        var imageIds = mutableListOf<Long>()
+
+        val selection = "${FeedReaderContract.AlbumEntry.COLUMN_NAME_TITLE} = ?"
+        val selectionArgs = arrayOf(albumName.toLowerCase()) // Приводим к нижнему регистру
+
+        val cursor = db.query(
+            FeedReaderContract.AlbumEntry.TABLE_NAME,
+            arrayOf(FeedReaderContract.AlbumEntry.COLUMN_NAME_IMAGE_IDS),
+            selection,
+            selectionArgs,
+            null,
+            null,
+            null
+        )
+
+        if (cursor.moveToFirst()) {
+            val imageIdsString = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.AlbumEntry.COLUMN_NAME_IMAGE_IDS))
+            imageIds = imageIdsString.split(",").mapNotNull { it.toLongOrNull() }.toMutableList()
+        }
+        cursor.close()
+        return imageIds
+    }
+
 
     private fun openDatePicker(editText: EditText, isStartDate: Boolean) {
         val calendar = Calendar.getInstance()
@@ -230,6 +340,20 @@ class FiltersActivity : AppCompatActivity() {
 
         secondFilterContainer.layoutParams = layoutParams
         secondFilterContainer.requestLayout()
+    }
+
+    private fun updateThirdContainerConstraints(isNoPhotosVisible: Boolean, isPhotosVisible: Boolean) {
+        val thirdContainer: View = findViewById(R.id.third_filter_container) // Замените на ваш ID
+        val layoutParams = thirdContainer.layoutParams as ConstraintLayout.LayoutParams
+
+        if (isNoPhotosVisible) {
+            layoutParams.topToBottom = R.id.textViewNoPhotos // Привязка к textViewNoPhotos
+        } else if (isPhotosVisible) {
+            layoutParams.topToBottom = R.id.recyclerView4 // Привязка к recyclerView4
+        }
+
+        thirdContainer.layoutParams = layoutParams
+        thirdContainer.requestLayout()
     }
 
     private fun cancelChanges() {

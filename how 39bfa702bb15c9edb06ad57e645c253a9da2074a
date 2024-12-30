@@ -1,0 +1,101 @@
+[33mcommit 39bfa702bb15c9edb06ad57e645c253a9da2074a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mpage_albums[m[33m)[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Sun Dec 29 23:57:30 2024 +0300
+
+    .
+
+[33mcommit b29fdd3a69e5ee59e125b93e2347d832eab59356[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Sun Dec 29 23:58:47 2024 +0300
+
+    .
+
+[33mcommit ab52a70bfe5b074bfd4f397551f70f6de0da32ea[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Sun Dec 29 23:57:30 2024 +0300
+
+    Filter with albums made
+
+[33mcommit 18fdca81ea2ba277a2da27cc98572f629b44fa57[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Fri Dec 27 16:48:06 2024 +0300
+
+    Craetion, opening, showing etc with albums was made
+
+[33mcommit 21e927cbb92143e53ccbe6cd1a488d20b6e56223[m[33m ([m[1;32mpage_filters[m[33m)[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Thu Dec 26 19:39:49 2024 +0300
+
+    Messages "No such photo" format added to dates and tags
+
+[33mcommit 9b7d27e0bda17424c1b1ef0368f4f916f08c5da9[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Thu Dec 26 19:39:32 2024 +0300
+
+    Messages "No such photo" format added
+
+[33mcommit bd4ba63f2fc25420b668771c2145cd7a622d4d58[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Thu Dec 26 17:01:59 2024 +0300
+
+    Tags filter created
+
+[33mcommit 7baedae8d6096e6ac5bfd16ed20de5218306f400[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Thu Dec 26 15:00:10 2024 +0300
+
+    Correct reflection of photos on filter with dates
+
+[33mcommit a460f673bf70df2a6c7dc8359c981a02840eb2ba[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Thu Dec 26 14:36:31 2024 +0300
+
+    Working filter with dates
+
+[33mcommit b0057977f260dc375cb4c3b0c8117e7e85331604[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Wed Dec 25 22:01:44 2024 +0300
+
+    Date filter show chosen dates
+
+[33mcommit 86cd834f55189aa3eb4608757870628dbcec0616[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Wed Dec 25 20:52:41 2024 +0300
+
+    Photos on main can be turned over and have good quality (+ working navigation on main)
+
+[33mcommit 53ded45f574eefce476307b94ba181316dfa856f[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Wed Dec 25 20:48:27 2024 +0300
+
+    Photos on main can be turned over and have good quality
+
+[33mcommit bd93283618ed5946f3a206950d3f9b638c8c6fea[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Wed Dec 25 19:13:19 2024 +0300
+
+    Photos on main can be turned over (but the quality is law)
+
+[33mcommit f25ab81dfe5a2c34457d909a07ddc46d182e0512[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Wed Dec 25 19:13:09 2024 +0300
+
+    Photos on main can be turned over (but the quality is law)
+
+[33mcommit 583e70ce1ef18004fe4851cb9a9cdf122ef63143[m[33m ([m[1;31morigin/master[m[33m)[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Tue Dec 24 15:51:04 2024 +0300
+
+    Created adding photos by camera + their description (+save in db)
+
+[33mcommit 219d2e10e523ca888137aef102eb36a296079e0b[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Tue Dec 24 15:50:55 2024 +0300
+
+    Created adding photos by camera + their description (+save in db)
+
+[33mcommit 7a2610475db40b644a64031c5d3ffdb410446abc[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Sat Dec 21 22:14:37 2024 +0300
+
+    The start of work. Created 2 pages without working db

@@ -1,0 +1,879 @@
+[33mcommit 18fdca81ea2ba277a2da27cc98572f629b44fa57[m
+Author: SofiyaBaranouskaya <sofi220307@gmail.com>
+Date:   Fri Dec 27 16:48:06 2024 +0300
+
+    Craetion, opening, showing etc with albums was made
+
+[1mdiff --git a/FeedReader.db b/FeedReader.db[m
+[1mindex 689439d..c2ae396 100644[m
+Binary files a/FeedReader.db and b/FeedReader.db differ
+[1mdiff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml[m
+[1mindex 2042725..7f150fd 100644[m
+[1m--- a/app/src/main/AndroidManifest.xml[m
+[1m+++ b/app/src/main/AndroidManifest.xml[m
+[36m@@ -15,9 +15,11 @@[m
+         android:theme="@style/Theme.PhotoGallery"[m
+         tools:targetApi="31">[m
+         <activity[m
+[31m-            android:name=".PhotoDetailActivity"[m
+[32m+[m[32m            android:name=".Activities.SelectPhotosActivity"[m
+             android:exported="false" />[m
+[31m-        <!-- <activity -->[m
+[32m+[m[32m        <activity[m
+[32m+[m[32m            android:name=".Activities.PhotoDetailActivity"[m
+[32m+[m[32m            android:exported="false" /> <!-- <activity -->[m
+         <!-- android:name=".Activities.ImagePickerActivity" -->[m
+         <!-- android:exported="false" /> -->[m
+         <activity[m
+[36m@@ -36,6 +38,7 @@[m
+             </intent-filter>[m
+         </activity>[m
+         <activity android:name=".AlbumsActivity" />[m
+[32m+[m
+         <provider[m
+             android:name="androidx.core.content.FileProvider"[m
+             android:authorities="${applicationId}.fileprovider"[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/Activities/AlbumsActivity.kt b/app/src/main/java/com/safiya/photogallery/Activities/AlbumsActivity.kt[m
+[1mindex e77a6af..1f5d29f 100644[m
+[1m--- a/app/src/main/java/com/safiya/photogallery/Activities/AlbumsActivity.kt[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/Activities/AlbumsActivity.kt[m
+[36m@@ -16,6 +16,7 @@[m [mclass AlbumsActivity : AppCompatActivity() {[m
+ [m
+     private lateinit var recyclerView: RecyclerView[m
+     private lateinit var albumAdapter: AlbumAdapter[m
+[32m+[m[32m    private lateinit var albumRepository: AlbumRepository[m
+ [m
+     override fun onCreate(savedInstanceState: Bundle?) {[m
+         super.onCreate(savedInstanceState)[m
+[36m@@ -64,15 +65,15 @@[m [mclass AlbumsActivity : AppCompatActivity() {[m
+         recyclerView = findViewById(R.id.recyclerViewAlbums)[m
+         recyclerView.layoutManager = GridLayoutManager(this, 2) // 2 колонки[m
+ [m
+[31m-        // Создание списка альбомов (пример)[m
+[31m-        val albums = listOf([m
+[31m-            Album("Название 1", "01.01.2023", R.drawable.album1), // Замените на реальные ресурсы[m
+[31m-            Album("Название 2", "02.01.2023", R.drawable.album2),[m
+[31m-            Album("Название 3", "03.01.2023", R.drawable.album3),[m
+[31m-            Album("Название 4", "04.01.2023", R.drawable.album4),[m
+[31m-            Album("Название 5", "02.01.2023", R.drawable.photo1),[m
+[31m-            Album("Название 6", "03.01.2023", R.drawable.photo2)[m
+[31m-        )[m
+[32m+[m[32m        // Инициализация репозитория[m
+[32m+[m[32m        albumRepository = AlbumRepository(FeedReaderDbHelper(this))[m
+[32m+[m
+[32m+[m[32m        // Получаем альбомы из базы данных[m
+[32m+[m[32m        val albums = albumRepository.getAllAlbums().map { album ->[m
+[32m+[m[32m            // Используем photo1 как заставку для всех альбомов[m
+[32m+[m[32m            album.copy(imageIds = listOf(R.drawable.photo1.toLong())) // Преобразуем в Long[m
+[32m+[m
+[32m+[m[32m        }[m
+ [m
+         // Инициализация адаптера[m
+         albumAdapter = AlbumAdapter(this, albums) { album -> // Передаем контекст[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/Activities/MainActivity.kt b/app/src/main/java/com/safiya/photogallery/Activities/MainActivity.kt[m
+[1mindex f45930d..4997f35 100644[m
+[1m--- a/app/src/main/java/com/safiya/photogallery/Activities/MainActivity.kt[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/Activities/MainActivity.kt[m
+[36m@@ -21,6 +21,7 @@[m [mimport androidx.core.view.ViewCompat[m
+ import androidx.core.view.WindowInsetsCompat[m
+ import androidx.recyclerview.widget.GridLayoutManager[m
+ import androidx.recyclerview.widget.RecyclerView[m
+[32m+[m[32mimport com.safiya.photogallery.Activities.SelectPhotosActivity[m
+ import java.io.File[m
+ import java.io.FileOutputStream[m
+ import java.text.SimpleDateFormat[m
+[36m@@ -116,7 +117,8 @@[m [mclass MainActivity : AppCompatActivity() {[m
+             when (which) {[m
+                 0 -> openCamera()[m
+                 1 -> {[m
+[31m-                    // Логика для добавления альбома[m
+[32m+[m[32m                    // Переход к активности выбора фотографий[m
+[32m+[m[32m                    startActivity(Intent(this, SelectPhotosActivity::class.java))[m
+                 }[m
+             }[m
+         }[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/Activities/OpenedAlbumActivity.kt b/app/src/main/java/com/safiya/photogallery/Activities/OpenedAlbumActivity.kt[m
+[1mindex 00c0185..bdbac79 100644[m
+[1m--- a/app/src/main/java/com/safiya/photogallery/Activities/OpenedAlbumActivity.kt[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/Activities/OpenedAlbumActivity.kt[m
+[36m@@ -12,17 +12,17 @@[m [mimport androidx.recyclerview.widget.RecyclerView[m
+ class OpenedAlbumActivity : AppCompatActivity() {[m
+ [m
+     private lateinit var recyclerView: RecyclerView[m
+[31m-    private lateinit var photosAdapter: PhotoAdapter // Ваш адаптер для фотографий[m
+[32m+[m[32m    private lateinit var photosAdapter: PhotoAdapter[m
+     private lateinit var noPhotosText: TextView[m
+     private lateinit var backButton: ImageView[m
+     private lateinit var albumTitle: TextView[m
+     private lateinit var albumDate: TextView[m
+[32m+[m[32m    private lateinit var albumRepository: AlbumRepository[m
+ [m
+     override fun onCreate(savedInstanceState: Bundle?) {[m
+         super.onCreate(savedInstanceState)[m
+[31m-        setContentView(R.layout.activity_opened_album) // Убедитесь, что имя макета верное[m
+[32m+[m[32m        setContentView(R.layout.activity_opened_album)[m
+ [m
+[31m-        // Инициализируем элементы интерфейса[m
+         recyclerView = findViewById(R.id.recyclerViewPhotos)[m
+         noPhotosText = findViewById(R.id.noPhotosText)[m
+         backButton = findViewById(R.id.backButton)[m
+[36m@@ -31,32 +31,47 @@[m [mclass OpenedAlbumActivity : AppCompatActivity() {[m
+ [m
+         // Получите данные альбома из Intent[m
+         val album = intent.getParcelableExtra<Album>("ALBUM")[m
+[31m-        albumTitle.text = album?.title // Устанавливаем название альбома[m
+[31m-        albumDate.text = album?.date // Устанавливаем дату альбома[m
+[32m+[m[32m        albumTitle.text = album?.title[m
+[32m+[m[32m        albumDate.text = album?.createdAt[m
+ [m
+[31m-        // Инициализация RecyclerView[m
+         recyclerView.layoutManager = GridLayoutManager(this, 3)[m
+[32m+[m[32m        albumRepository = AlbumRepository(FeedReaderDbHelper(this)) // Инициализация репозитория[m
+[32m+[m
+[32m+[m[32m        // Получаем список объектов Photo для альбома по названию и дате[m
+[32m+[m[32m        album?.let {[m
+[32m+[m[32m            val photos = fetchPhotosForAlbum(it)[m
+[32m+[m
+[32m+[m[32m            if (photos.isEmpty()) {[m
+[32m+[m[32m                noPhotosText.visibility = View.VISIBLE[m
+[32m+[m[32m                recyclerView.visibility = View.GONE[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                noPhotosText.visibility = View.GONE[m
+[32m+[m[32m                recyclerView.visibility = View.VISIBLE[m
+[32m+[m
+[32m+[m[32m                photosAdapter = PhotoAdapter(this, photos.toMutableList()) {[m
+[32m+[m[32m                    // Обновляем адаптер при удалении (если это нужно)[m
+[32m+[m[32m                    photosAdapter.updateData(fetchPhotosForAlbum(it))[m
+[32m+[m[32m                }[m
+[32m+[m[32m                recyclerView.adapter = photosAdapter[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } ?: run {[m
+[32m+[m[32m            noPhotosText.visibility = View.VISIBLE[m
+[32m+[m[32m            recyclerView.visibility = View.GONE[m
+[32m+[m[32m        }[m
+ [m
+[31m-        // Получите список идентификаторов изображений[m
+[31m-        val photos = getPhotosForAlbum(album) // Реализуйте метод для получения списка идентификаторов[m
+[31m-[m
+[31m-//        // Проверьте наличие фотографий[m
+[31m-//        if (photos.isEmpty()) {[m
+[31m-//            noPhotosText.visibility = View.VISIBLE[m
+[31m-//        } else {[m
+[31m-//            noPhotosText.visibility = View.GONE[m
+[31m-//            photosAdapter = PhotoAdapter(this, photos) // Передаем контекст и список идентификаторов[m
+[31m-//            recyclerView.adapter = photosAdapter[m
+[31m-//        }[m
+[31m-//[m
+[31m-        // Обработчик нажатия на кнопку "Назад"[m
+         backButton.setOnClickListener {[m
+[31m-            finish() // Завершает текущую активность и возвращает к предыдущей[m
+[32m+[m[32m            finish()[m
+         }[m
+     }[m
+ [m
+[31m-    private fun getPhotosForAlbum(album: Album?): List<Int> {[m
+[31m-        // Реализуйте логику получения идентификаторов фотографий для данного альбома[m
+[31m-        return listOf(R.drawable.photo1, R.drawable.photo2, R.drawable.photo3) // Пример списка идентификаторов[m
+[32m+[m[32m    private fun fetchPhotosForAlbum(album: Album): List<Photo> {[m
+[32m+[m[32m        // Ищем альбом в базе данных по названию и дате создания[m
+[32m+[m[32m        val allAlbums = albumRepository.getAllAlbums()[m
+[32m+[m[32m        val matchedAlbum = allAlbums.find {[m
+[32m+[m[32m            it.title == album.title && it.createdAt == album.createdAt[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Если альбом найден, получаем его фотографии[m
+[32m+[m[32m        return matchedAlbum?.let { albumRepository.getPhotosForAlbum(it) } ?: emptyList()[m
+     }[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/PhotoDetailActivity.kt b/app/src/main/java/com/safiya/photogallery/Activities/PhotoDetailActivity.kt[m
+[1msimilarity index 93%[m
+[1mrename from app/src/main/java/com/safiya/photogallery/PhotoDetailActivity.kt[m
+[1mrename to app/src/main/java/com/safiya/photogallery/Activities/PhotoDetailActivity.kt[m
+[1mindex a319ce8..ad3c898 100644[m
+[1m--- a/app/src/main/java/com/safiya/photogallery/PhotoDetailActivity.kt[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/Activities/PhotoDetailActivity.kt[m
+[36m@@ -1,10 +1,11 @@[m
+[31m-package com.safiya.photogallery[m
+[32m+[m[32mpackage com.safiya.photogallery.Activities[m
+ [m
+ import android.graphics.BitmapFactory[m
+[31m-import android.net.Uri[m
+ import android.os.Bundle[m
+ import android.widget.ImageView[m
+ import androidx.appcompat.app.AppCompatActivity[m
+[32m+[m[32mimport com.safiya.photogallery.Photo[m
+[32m+[m[32mimport com.safiya.photogallery.R[m
+ [m
+ class PhotoDetailActivity : AppCompatActivity() {[m
+ [m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/Activities/SelectPhotosActivity.kt b/app/src/main/java/com/safiya/photogallery/Activities/SelectPhotosActivity.kt[m
+[1mnew file mode 100644[m
+[1mindex 0000000..4e7177f[m
+[1m--- /dev/null[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/Activities/SelectPhotosActivity.kt[m
+[36m@@ -0,0 +1,101 @@[m
+[32m+[m[32mpackage com.safiya.photogallery.Activities[m
+[32m+[m
+[32m+[m[32mimport Album[m
+[32m+[m[32mimport android.content.Intent[m
+[32m+[m[32mimport android.os.Bundle[m
+[32m+[m[32mimport android.provider.Settings[m
+[32m+[m[32mimport android.util.Log[m
+[32m+[m[32mimport android.widget.EditText[m
+[32m+[m[32mimport android.widget.Button[m
+[32m+[m[32mimport androidx.activity.enableEdgeToEdge[m
+[32m+[m[32mimport androidx.appcompat.app.AppCompatActivity[m
+[32m+[m[32mimport androidx.core.view.ViewCompat[m
+[32m+[m[32mimport androidx.core.view.WindowInsetsCompat[m
+[32m+[m[32mimport androidx.recyclerview.widget.GridLayoutManager[m
+[32m+[m[32mimport androidx.recyclerview.widget.RecyclerView[m
+[32m+[m[32mimport com.safiya.photogallery.Photo[m
+[32m+[m[32mimport com.safiya.photogallery.CustomPhotoAdapter[m
+[32m+[m[32mimport com.safiya.photogallery.AlbumRepository[m
+[32m+[m[32mimport com.safiya.photogallery.AlbumsActivity[m
+[32m+[m[32mimport com.safiya.photogallery.R[m
+[32m+[m[32mimport com.safiya.photogallery.FeedReaderDbHelper[m
+[32m+[m[32mimport com.safiya.photogallery.PhotoRepository[m
+[32m+[m
+[32m+[m[32mclass SelectPhotosActivity : AppCompatActivity() {[m
+[32m+[m
+[32m+[m[32m    private lateinit var recyclerView: RecyclerView[m
+[32m+[m[32m    private lateinit var photoAdapter: CustomPhotoAdapter[m
+[32m+[m[32m    private lateinit var albumRepository: AlbumRepository[m
+[32m+[m[32m    private lateinit var photoRepository: PhotoRepository[m
+[32m+[m
+[32m+[m[32m    override fun onCreate(savedInstanceState: Bundle?) {[m
+[32m+[m[32m        super.onCreate(savedInstanceState)[m
+[32m+[m[32m        enableEdgeToEdge()[m
+[32m+[m[32m        setContentView(R.layout.activity_select_photos)[m
+[32m+[m
+[32m+[m[32m        recyclerView = findViewById(R.id.recycler_view_photos)[m
+[32m+[m[32m        recyclerView.layoutManager = GridLayoutManager(this, 3)[m
+[32m+[m
+[32m+[m[32m        albumRepository = AlbumRepository(FeedReaderDbHelper(this))[m
+[32m+[m[32m        photoRepository = PhotoRepository(FeedReaderDbHelper(this))[m
+[32m+[m
+[32m+[m[32m        // Получаем все фотографии[m
+[32m+[m[32m        val photoList = photoRepository.getAllPhotos()[m
+[32m+[m[32m        Log.d("SelectPhotosActivity", "Loaded photos: ${photoList.size}")[m
+[32m+[m
+[32m+[m[32m        // Инициализация нового адаптера[m
+[32m+[m[32m        photoAdapter = CustomPhotoAdapter(this, photoList.toMutableList()) { photo ->[m
+[32m+[m[32m            // Обработка выбора фотографии[m
+[32m+[m[32m            Log.d("SelectPhotosActivity", "Photo selected: ${photo.id}, selected: ${photo.isSelected}")[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        recyclerView.adapter = photoAdapter[m
+[32m+[m
+[32m+[m[32m        findViewById<Button>(R.id.save_album_button).setOnClickListener {[m
+[32m+[m[32m            Log.d("SelectPhotosActivity", "Save button clicked")[m
+[32m+[m[32m            saveAlbum()[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private fun saveAlbum() {[m
+[32m+[m[32m        val albumTitleInput = findViewById<EditText>(R.id.album_title_edit_text).text.toString()[m
+[32m+[m[32m        val allAlbums = albumRepository.getAllAlbums()[m
+[32m+[m[32m        val albumCount = allAlbums.size[m
+[32m+[m
+[32m+[m[32m        val albumTitle = if (albumTitleInput.isNotBlank()) {[m
+[32m+[m[32m            albumTitleInput[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            if (albumCount == 0) {[m
+[32m+[m[32m                "Album1"[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                "Album${albumCount + 1}"[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        Log.d("SelectPhotosActivity", "Album title: $albumTitle")[m
+[32m+[m
+[32m+[m[32m        // Получите выбранные ID фотографий[m
+[32m+[m[32m        val selectedImageIds = photoAdapter.getSelectedPhotoIds()[m
+[32m+[m[32m        Log.d("SelectPhotosActivity", "Selected image IDs: $selectedImageIds")[m
+[32m+[m
+[32m+[m[32m        // Создаем новый альбом[m
+[32m+[m[32m        val album = Album([m
+[32m+[m[32m            title = albumTitle,[m
+[32m+[m[32m            createdAt = System.currentTimeMillis().toString(),[m
+[32m+[m[32m            deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID),[m
+[32m+[m[32m            imageIds = selectedImageIds // Используем выбранные ID[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            albumRepository.insertAlbum(album)[m
+[32m+[m[32m            Log.d("SelectPhotosActivity", "Album saved: $album")[m
+[32m+[m
+[32m+[m[32m            // Переход на страницу со всеми альбомами[m
+[32m+[m[32m            val intent = Intent(this, AlbumsActivity::class.java)[m
+[32m+[m[32m            startActivity(intent)[m
+[32m+[m[32m            finish()[m
+[32m+[m[32m        } catch (e: Exception) {[m
+[32m+[m[32m            Log.e("SelectPhotosActivity", "Error saving album", e)[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/Adapters/AlbumAdapter.kt b/app/src/main/java/com/safiya/photogallery/Adapters/AlbumAdapter.kt[m
+[1mindex b60b970..e0d63cb 100644[m
+[1m--- a/app/src/main/java/com/safiya/photogallery/Adapters/AlbumAdapter.kt[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/Adapters/AlbumAdapter.kt[m
+[36m@@ -22,13 +22,20 @@[m [mclass AlbumAdapter([m
+ [m
+         fun bind(album: Album) {[m
+             // Загрузка изображения из ресурсов[m
+[31m-            albumImageView.setImageResource(album.imageResId)[m
+[32m+[m[32m            // Предполагаем, что imageIds - это список идентификаторов изображений[m
+[32m+[m[32m            if (album.imageIds.isNotEmpty()) {[m
+[32m+[m[32m                // Замените 0 на нужный индекс или логику для выбора изображения[m
+[32m+[m[32m                albumImageView.setImageResource(album.imageIds[0].toInt()) // Преобразование в Int[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                // Установите изображение по умолчанию или скрыть ImageView[m
+[32m+[m[32m                albumImageView.setImageResource(R.drawable.album4) // Пример изображения по умолчанию[m
+[32m+[m[32m            }[m
+             albumTitleTextView.text = album.title[m
+[31m-            albumDateTextView.text = album.date[m
+[32m+[m[32m            albumDateTextView.text = album.createdAt[m
+ [m
+             // Обработка нажатия на элемент[m
+             itemView.setOnClickListener {[m
+[31m-                onAlbumClick(album) // Вызываем лямбда-функцию при нажатии[m
+[32m+[m[32m                onAlbumClick(album)[m
+             }[m
+         }[m
+     }[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/Adapters/FilterPhotoAdapter.kt b/app/src/main/java/com/safiya/photogallery/Adapters/FilterPhotoAdapter.kt[m
+[1mindex 2cfd7ee..c118b58 100644[m
+[1m--- a/app/src/main/java/com/safiya/photogallery/Adapters/FilterPhotoAdapter.kt[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/Adapters/FilterPhotoAdapter.kt[m
+[36m@@ -1,7 +1,7 @@[m
+ package com.safiya.photogallery.Adapters[m
+ [m
+ import com.safiya.photogallery.Photo[m
+[31m-import com.safiya.photogallery.PhotoDetailActivity[m
+[32m+[m[32mimport com.safiya.photogallery.Activities.PhotoDetailActivity[m
+ import com.safiya.photogallery.R[m
+ import android.content.Context[m
+ import android.content.Intent[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/Adapters/PhotoAdapter.kt b/app/src/main/java/com/safiya/photogallery/Adapters/PhotoAdapter.kt[m
+[1mindex 96accab..fb1c542 100644[m
+[1m--- a/app/src/main/java/com/safiya/photogallery/Adapters/PhotoAdapter.kt[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/Adapters/PhotoAdapter.kt[m
+[36m@@ -8,6 +8,7 @@[m [mimport android.view.View[m
+ import android.view.ViewGroup[m
+ import android.widget.ImageView[m
+ import androidx.recyclerview.widget.RecyclerView[m
+[32m+[m[32mimport com.safiya.photogallery.Activities.PhotoDetailActivity[m
+ [m
+ class PhotoAdapter([m
+     private val context: Context,[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/Album.kt b/app/src/main/java/com/safiya/photogallery/Album.kt[m
+[1mindex a710150..7cf2b16 100644[m
+[1m--- a/app/src/main/java/com/safiya/photogallery/Album.kt[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/Album.kt[m
+[36m@@ -3,19 +3,22 @@[m [mimport android.os.Parcelable[m
+ [m
+ data class Album([m
+     val title: String,[m
+[31m-    val date: String,[m
+[31m-    val imageResId: Int // Например, идентификатор изображения[m
+[32m+[m[32m    val createdAt: String,[m
+[32m+[m[32m    val deviceId: String,[m
+[32m+[m[32m    val imageIds: List<Long>[m
+ ) : Parcelable {[m
+     constructor(parcel: Parcel) : this([m
+         parcel.readString() ?: "",[m
+         parcel.readString() ?: "",[m
+[31m-        parcel.readInt() // Или другой тип, если необходимо[m
+[32m+[m[32m        parcel.readString() ?: "", // deviceId[m
+[32m+[m[32m        parcel.createLongArray()?.toList() ?: emptyList() // Преобразуем массив в список[m
+     )[m
+ [m
+     override fun writeToParcel(parcel: Parcel, flags: Int) {[m
+         parcel.writeString(title)[m
+[31m-        parcel.writeString(date)[m
+[31m-        parcel.writeInt(imageResId)[m
+[32m+[m[32m        parcel.writeString(createdAt) // Дата создания[m
+[32m+[m[32m        parcel.writeString(deviceId) // Идентификатор устройства[m
+[32m+[m[32m        parcel.writeLongArray(imageIds.toLongArray()) // Преобразуем список в массив[m
+     }[m
+ [m
+     override fun describeContents(): Int {[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/AlbumRepository.kt b/app/src/main/java/com/safiya/photogallery/AlbumRepository.kt[m
+[1mnew file mode 100644[m
+[1mindex 0000000..8df076a[m
+[1m--- /dev/null[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/AlbumRepository.kt[m
+[36m@@ -0,0 +1,139 @@[m
+[32m+[m[32mpackage com.safiya.photogallery[m
+[32m+[m
+[32m+[m[32mimport Album[m
+[32m+[m[32mimport android.content.ContentValues[m
+[32m+[m[32mimport android.database.Cursor[m
+[32m+[m[32mimport android.provider.BaseColumns[m
+[32m+[m[32mimport android.util.Log[m
+[32m+[m[32mimport java.text.SimpleDateFormat[m
+[32m+[m[32mimport java.util.Date[m
+[32m+[m[32mimport java.util.Locale[m
+[32m+[m
+[32m+[m[32mclass AlbumRepository(private val dbHelper: FeedReaderDbHelper) {[m
+[32m+[m
+[32m+[m[32m    // Функция для форматирования даты из миллисекунд[m
+[32m+[m[32m    private fun formatDate(timestamp: Long): String {[m
+[32m+[m[32m        val date = Date(timestamp)[m
+[32m+[m[32m        val format = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault())[m
+[32m+[m[32m        return format.format(date)[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    fun getAllAlbums(): List<Album> {[m
+[32m+[m[32m        val albums = mutableListOf<Album>()[m
+[32m+[m[32m        val db = dbHelper.readableDatabase[m
+[32m+[m[32m        val projection = arrayOf([m
+[32m+[m[32m            BaseColumns._ID,[m
+[32m+[m[32m            FeedReaderContract.AlbumEntry.COLUMN_NAME_DEVICE_ID,[m
+[32m+[m[32m            FeedReaderContract.AlbumEntry.COLUMN_NAME_TITLE,[m
+[32m+[m[32m            FeedReaderContract.AlbumEntry.COLUMN_NAME_CREATED_AT,[m
+[32m+[m[32m            FeedReaderContract.AlbumEntry.COLUMN_NAME_IMAGE_IDS[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        var cursor: Cursor? = null[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            cursor = db.query([m
+[32m+[m[32m                FeedReaderContract.AlbumEntry.TABLE_NAME,[m
+[32m+[m[32m                projection,[m
+[32m+[m[32m                null,[m
+[32m+[m[32m                null,[m
+[32m+[m[32m                null,[m
+[32m+[m[32m                null,[m
+[32m+[m[32m                null[m
+[32m+[m[32m            )[m
+[32m+[m
+[32m+[m[32m            if (cursor != null && cursor.moveToFirst()) {[m
+[32m+[m[32m                do {[m
+[32m+[m[32m                    val deviceId = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.AlbumEntry.COLUMN_NAME_DEVICE_ID))[m
+[32m+[m[32m                    val title = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.AlbumEntry.COLUMN_NAME_TITLE))[m
+[32m+[m[32m                    val createdAt = cursor.getLong(cursor.getColumnIndexOrThrow(FeedReaderContract.AlbumEntry.COLUMN_NAME_CREATED_AT))[m
+[32m+[m[32m                    val formattedDate = formatDate(createdAt) // Форматируем дату[m
+[32m+[m[32m                    val imageIdsString = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.AlbumEntry.COLUMN_NAME_IMAGE_IDS))[m
+[32m+[m
+[32m+[m[32m                    val imageIds = if (imageIdsString.isNotEmpty()) {[m
+[32m+[m[32m                        imageIdsString.split(",").mapNotNull { it.toLongOrNull() } // Преобразование в Long[m
+[32m+[m[32m                    } else {[m
+[32m+[m[32m                        emptyList()[m
+[32m+[m[32m                    }[m
+[32m+[m
+[32m+[m[32m                    albums.add(Album(title, formattedDate, deviceId, imageIds)) // Используем formattedDate[m
+[32m+[m[32m                } while (cursor.moveToNext())[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (e: Exception) {[m
+[32m+[m[32m            Log.e("AlbumRepository", "Error fetching albums", e)[m
+[32m+[m[32m        } finally {[m
+[32m+[m[32m            cursor?.close()[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        return albums[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    fun insertAlbum(album: Album) {[m
+[32m+[m[32m        val db = dbHelper.writableDatabase[m
+[32m+[m[32m        val values = ContentValues().apply {[m
+[32m+[m[32m            put(FeedReaderContract.AlbumEntry.COLUMN_NAME_TITLE, album.title)[m
+[32m+[m[32m            put(FeedReaderContract.AlbumEntry.COLUMN_NAME_CREATED_AT, System.currentTimeMillis()) // Сохраняем текущее время[m
+[32m+[m[32m            put(FeedReaderContract.AlbumEntry.COLUMN_NAME_DEVICE_ID, album.deviceId)[m
+[32m+[m[32m            put(FeedReaderContract.AlbumEntry.COLUMN_NAME_IMAGE_IDS, album.imageIds.joinToString(",")) // Сохраняем идентификаторы как строку[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            val newRowId = db.insert(FeedReaderContract.AlbumEntry.TABLE_NAME, null, values)[m
+[32m+[m[32m            if (newRowId == -1L) {[m
+[32m+[m[32m                Log.e("AlbumRepository", "Error inserting album")[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                Log.d("AlbumRepository", "Album inserted: ID = $newRowId, $album")[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } catch (e: Exception) {[m
+[32m+[m[32m            Log.e("AlbumRepository", "Error inserting album", e)[m
+[32m+[m[32m        } finally {[m
+[32m+[m[32m            db.close()[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    fun deleteAllAlbums() {[m
+[32m+[m[32m        val db = dbHelper.writableDatabase[m
+[32m+[m[32m        db.execSQL("DELETE FROM ${FeedReaderContract.AlbumEntry.TABLE_NAME}")[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // Новый метод для получения фотографий для альбома[m
+[32m+[m[32m    fun getPhotosForAlbum(album: Album): List<Photo> {[m
+[32m+[m[32m        // Получаем список изображений по идентификаторам[m
+[32m+[m[32m        return album.imageIds.mapNotNull { getPhotoById(it) } // Получаем объект Photo по ID[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    private fun getPhotoById(id: Long): Photo? {[m
+[32m+[m[32m        val db = dbHelper.readableDatabase[m
+[32m+[m[32m        val cursor = db.query([m
+[32m+[m[32m            FeedReaderContract.PhotoEntry.TABLE_NAME,[m
+[32m+[m[32m            null,[m
+[32m+[m[32m            "${BaseColumns._ID} = ?",[m
+[32m+[m[32m            arrayOf(id.toString()),[m
+[32m+[m[32m            null,[m
+[32m+[m[32m            null,[m
+[32m+[m[32m            null[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        return if (cursor.moveToFirst()) {[m
+[32m+[m[32m            // Извлечение данных из курсора и создание объекта Photo[m
+[32m+[m[32m            val imagePath = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH))[m
+[32m+[m[32m            val deviceId = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_DEVICE_ID))[m
+[32m+[m[32m            val createdAt = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT))[m
+[32m+[m[32m            val title = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE))[m
+[32m+[m[32m            val tagsString = cursor.getString(cursor.getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS))[m
+[32m+[m[32m            val tags = tagsString.split(",").toTypedArray() // Преобразуем строку в массив тегов[m
+[32m+[m
+[32m+[m[32m            Photo([m
+[32m+[m[32m                id = id,[m
+[32m+[m[32m                imagePath = imagePath,[m
+[32m+[m[32m                deviceId = deviceId,[m
+[32m+[m[32m                createdAt = createdAt,[m
+[32m+[m[32m                title = title,[m
+[32m+[m[32m                tags = tags // Передаем теги[m
+[32m+[m[32m            )[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            null[m
+[32m+[m[32m        }.also {[m
+[32m+[m[32m            cursor.close()[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/CustomPhotoAdapter.kt b/app/src/main/java/com/safiya/photogallery/CustomPhotoAdapter.kt[m
+[1mnew file mode 100644[m
+[1mindex 0000000..75ed387[m
+[1m--- /dev/null[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/CustomPhotoAdapter.kt[m
+[36m@@ -0,0 +1,70 @@[m
+[32m+[m[32mpackage com.safiya.photogallery[m
+[32m+[m
+[32m+[m[32mimport android.content.Context[m
+[32m+[m[32mimport android.view.LayoutInflater[m
+[32m+[m[32mimport android.view.View[m
+[32m+[m[32mimport android.view.ViewGroup[m
+[32m+[m[32mimport android.widget.CheckBox[m
+[32m+[m[32mimport android.widget.ImageView[m
+[32m+[m[32mimport androidx.recyclerview.widget.RecyclerView[m
+[32m+[m[32mimport com.bumptech.glide.Glide // Импортируйте Glide для загрузки изображений[m
+[32m+[m
+[32m+[m[32mclass CustomPhotoAdapter([m
+[32m+[m[32m    private val context: Context,[m
+[32m+[m[32m    private var photos: MutableList<Photo>,[m
+[32m+[m[32m    private val onPhotoClick: (Photo) -> Unit[m
+[32m+[m[32m) : RecyclerView.Adapter<CustomPhotoAdapter.PhotoViewHolder>() {[m
+[32m+[m
+[32m+[m[32m    inner class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {[m
+[32m+[m[32m        private val imageView: ImageView = itemView.findViewById(R.id.photo_image_view)[m
+[32m+[m[32m        private val checkBox: CheckBox = itemView.findViewById(R.id.photo_checkbox)[m
+[32m+[m
+[32m+[m[32m        init {[m
+[32m+[m[32m            // Обработка изменений состояния чекбокса[m
+[32m+[m[32m            checkBox.setOnCheckedChangeListener { _, isChecked ->[m
+[32m+[m[32m                photos[adapterPosition].isSelected = isChecked // Обновляем состояние выбора[m
+[32m+[m[32m                onPhotoClick(photos[adapterPosition]) // Вызываем коллбек[m
+[32m+[m[32m            }[m
+[32m+[m
+[32m+[m[32m            // Обработка клика по элементу[m
+[32m+[m[32m            itemView.setOnClickListener {[m
+[32m+[m[32m                checkBox.isChecked = !checkBox.isChecked // Переключаем состояние чекбокса[m
+[32m+[m[32m                checkBox.performClick() // Вызываем обработчик изменения состояния[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        // Метод для привязки данных к элементам[m
+[32m+[m[32m        fun bind(photo: Photo) {[m
+[32m+[m[32m            // Загрузка изображения с использованием Glide[m
+[32m+[m[32m            Glide.with(context)[m
+[32m+[m[32m                .load(photo.imagePath) // Замените на правильный путь к изображению[m
+[32m+[m[32m                .into(imageView)[m
+[32m+[m
+[32m+[m[32m            checkBox.isChecked = photo.isSelected // Устанавливаем состояние чекбокса[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {[m
+[32m+[m[32m        val view = LayoutInflater.from(context).inflate(R.layout.photo_item, parent, false)[m
+[32m+[m[32m        return PhotoViewHolder(view)[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {[m
+[32m+[m[32m        val photo = photos[position][m
+[32m+[m[32m        holder.bind(photo) // Привязываем данные к элементу[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    override fun getItemCount(): Int = photos.size[m
+[32m+[m
+[32m+[m[32m    // Метод для получения выбранных идентификаторов[m
+[32m+[m[32m    fun getSelectedPhotoIds(): List<Long> {[m
+[32m+[m[32m        return photos.filter { it.isSelected }.map { it.id }[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    // Метод для обновления данных в адаптере[m
+[32m+[m[32m    fun updateData(newPhotoList: List<Photo>) {[m
+[32m+[m[32m        photos.clear()[m
+[32m+[m[32m        photos.addAll(newPhotoList)[m
+[32m+[m[32m        notifyDataSetChanged()[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/FeedReaderContract.kt b/app/src/main/java/com/safiya/photogallery/FeedReaderContract.kt[m
+[1mindex 66028b5..19207e2 100644[m
+[1m--- a/app/src/main/java/com/safiya/photogallery/FeedReaderContract.kt[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/FeedReaderContract.kt[m
+[36m@@ -12,6 +12,15 @@[m [mobject FeedReaderContract {[m
+         const val COLUMN_NAME_TITLE = "title"[m
+         const val COLUMN_NAME_TAGS = "tags"[m
+     }[m
+[32m+[m
+[32m+[m[32m    object AlbumEntry : BaseColumns {[m
+[32m+[m[32m        const val TABLE_NAME = "photo_albums"[m
+[32m+[m
+[32m+[m[32m        const val COLUMN_NAME_DEVICE_ID = "device_id"[m
+[32m+[m[32m        const val COLUMN_NAME_TITLE = "title"[m
+[32m+[m[32m        const val COLUMN_NAME_CREATED_AT = "created_at"[m
+[32m+[m[32m        const val COLUMN_NAME_IMAGE_IDS = "image_ids" // Массив идентификаторов изображений[m
+[32m+[m[32m    }[m
+ }[m
+ [m
+ // SQL-запрос для создания таблицы[m
+[36m@@ -22,4 +31,12 @@[m [mprivate const val SQL_CREATE_ENTRIES =[m
+             "${FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT} TEXT DEFAULT CURRENT_TIMESTAMP," + // Дата добавления[m
+             "${FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH} TEXT NOT NULL," + // Путь к изображению[m
+             "${FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE} TEXT," + // Название фотографии[m
+[31m-            "${FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS} TEXT);" // Теги (в виде строки)[m
+\ No newline at end of file[m
+[32m+[m[32m            "${FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS} TEXT);" // Теги (в виде строки)[m
+[32m+[m
+[32m+[m[32mprivate const val SQL_CREATE_ALBUMS =[m
+[32m+[m[32m    "CREATE TABLE ${FeedReaderContract.AlbumEntry.TABLE_NAME} (" +[m
+[32m+[m[32m            "${BaseColumns._ID} INTEGER PRIMARY KEY AUTOINCREMENT," +[m
+[32m+[m[32m            "${FeedReaderContract.AlbumEntry.COLUMN_NAME_DEVICE_ID} TEXT NOT NULL," +[m
+[32m+[m[32m            "${FeedReaderContract.AlbumEntry.COLUMN_NAME_TITLE} TEXT NOT NULL," +[m
+[32m+[m[32m            "${FeedReaderContract.AlbumEntry.COLUMN_NAME_CREATED_AT} TEXT DEFAULT CURRENT_TIMESTAMP," +[m
+[32m+[m[32m            "${FeedReaderContract.AlbumEntry.COLUMN_NAME_IMAGE_IDS} TEXT);"[m
+\ No newline at end of file[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/FeedReaderDbHelper.kt b/app/src/main/java/com/safiya/photogallery/FeedReaderDbHelper.kt[m
+[1mindex 83bf715..728c6be 100644[m
+[1m--- a/app/src/main/java/com/safiya/photogallery/FeedReaderDbHelper.kt[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/FeedReaderDbHelper.kt[m
+[36m@@ -1,5 +1,6 @@[m
+ package com.safiya.photogallery[m
+ [m
+[32m+[m[32mimport Album[m
+ import android.content.Context[m
+ import android.database.sqlite.SQLiteDatabase[m
+ import android.database.sqlite.SQLiteOpenHelper[m
+[36m@@ -8,12 +9,14 @@[m [mimport android.provider.BaseColumns[m
+ class FeedReaderDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {[m
+ [m
+     override fun onCreate(db: SQLiteDatabase) {[m
+[31m-        db.execSQL(SQL_CREATE_ENTRIES)[m
+[32m+[m[32m        db.execSQL(SQL_CREATE_ENTRIES) // Создание таблицы photos[m
+[32m+[m[32m        db.execSQL(SQL_CREATE_ALBUMS) // Создание таблицы photo_albums[m
+     }[m
+ [m
+     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {[m
+[31m-        db.execSQL(SQL_DELETE_ENTRIES)[m
+[31m-        onCreate(db)[m
+[32m+[m[32m        db.execSQL(SQL_DELETE_ENTRIES) // Удаление таблицы photos[m
+[32m+[m[32m        db.execSQL(SQL_DELETE_ALBUMS) // Удаление таблицы photo_albums[m
+[32m+[m[32m        onCreate(db) // Создание таблиц заново[m
+     }[m
+ [m
+     fun getAllPhotos(): List<Photo> {[m
+[36m@@ -24,7 +27,7 @@[m [mclass FeedReaderDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_[m
+             BaseColumns._ID,[m
+             FeedReaderContract.PhotoEntry.COLUMN_NAME_DEVICE_ID,[m
+             FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT,[m
+[31m-            FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH, // Изменено на imagePath[m
+[32m+[m[32m            FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH,[m
+             FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE,[m
+             FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS[m
+         )[m
+[36m@@ -44,38 +47,85 @@[m [mclass FeedReaderDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_[m
+                 val id = getLong(getColumnIndexOrThrow(BaseColumns._ID))[m
+                 val deviceId = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_DEVICE_ID))[m
+                 val createdAt = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT))[m
+[31m-                val imagePath = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH)) // Используем imagePath[m
+[32m+[m[32m                val imagePath = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH))[m
+                 val title = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE))[m
+                 val tagsString = getString(getColumnIndexOrThrow(FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS))[m
+[31m-                val tags = tagsString.split(",").toTypedArray() // Преобразуем строку в массив[m
+[32m+[m[32m                val tags = tagsString.split(",").toTypedArray()[m
+ [m
+[31m-                photos.add(Photo(id, deviceId, createdAt, imagePath, title, tags)) // Передаем imagePath[m
+[32m+[m[32m                photos.add(Photo(id, deviceId, createdAt, imagePath, title, tags))[m
+             }[m
+         }[m
+         cursor.close()[m
+         return photos[m
+     }[m
+ [m
+[32m+[m[32m    fun getAllAlbums(): List<Album> {[m
+[32m+[m[32m        val albums = mutableListOf<Album>()[m
+[32m+[m[32m        val db = readableDatabase[m
+[32m+[m
+[32m+[m[32m        val projection = arrayOf([m
+[32m+[m[32m            BaseColumns._ID,[m
+[32m+[m[32m            FeedReaderContract.AlbumEntry.COLUMN_NAME_DEVICE_ID,[m
+[32m+[m[32m            FeedReaderContract.AlbumEntry.COLUMN_NAME_TITLE,[m
+[32m+[m[32m            FeedReaderContract.AlbumEntry.COLUMN_NAME_CREATED_AT,[m
+[32m+[m[32m            FeedReaderContract.AlbumEntry.COLUMN_NAME_IMAGE_IDS[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        val cursor = db.query([m
+[32m+[m[32m            FeedReaderContract.AlbumEntry.TABLE_NAME,[m
+[32m+[m[32m            projection,[m
+[32m+[m[32m            null, // no selection[m
+[32m+[m[32m            null, // no selection args[m
+[32m+[m[32m            null, // don't group the rows[m
+[32m+[m[32m            null, // don't filter by row groups[m
+[32m+[m[32m            null  // the sort order[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        with(cursor) {[m
+[32m+[m[32m            while (moveToNext()) {[m
+[32m+[m[32m                val deviceId = getString(getColumnIndexOrThrow(FeedReaderContract.AlbumEntry.COLUMN_NAME_DEVICE_ID))[m
+[32m+[m[32m                val title = getString(getColumnIndexOrThrow(FeedReaderContract.AlbumEntry.COLUMN_NAME_TITLE))[m
+[32m+[m[32m                val createdAt = getString(getColumnIndexOrThrow(FeedReaderContract.AlbumEntry.COLUMN_NAME_CREATED_AT))[m
+[32m+[m[32m                val imageIdsString = getString(getColumnIndexOrThrow(FeedReaderContract.AlbumEntry.COLUMN_NAME_IMAGE_IDS))[m
+[32m+[m[32m                val imageIds = imageIdsString.split(",").map { it.toLong() } // Преобразуем строку в список идентификаторов[m
+[32m+[m
+[32m+[m[32m                albums.add(Album(title, createdAt, deviceId, imageIds)) // Передаем все необходимые данные[m
+[32m+[m[32m            }[m
+[32m+[m[32m        }[m
+[32m+[m[32m        cursor.close()[m
+[32m+[m[32m        return albums[m
+[32m+[m[32m    }[m
+[32m+[m
+     fun deleteAllPhotos() {[m
+         val db = writableDatabase[m
+         db.execSQL("DELETE FROM ${FeedReaderContract.PhotoEntry.TABLE_NAME}")[m
+     }[m
+ [m
+     companion object {[m
+[31m-        const val DATABASE_VERSION = 1[m
+[32m+[m[32m        const val DATABASE_VERSION = 2[m
+         const val DATABASE_NAME = "FeedReader.db"[m
+ [m
+[31m-        // Определите строки SQL[m
+         private const val SQL_CREATE_ENTRIES =[m
+             "CREATE TABLE ${FeedReaderContract.PhotoEntry.TABLE_NAME} (" +[m
+[31m-                    "${BaseColumns._ID} INTEGER PRIMARY KEY AUTOINCREMENT," + // Уникальный идентификатор[m
+[31m-                    "${FeedReaderContract.PhotoEntry.COLUMN_NAME_DEVICE_ID} TEXT NOT NULL," + // ID устройства[m
+[31m-                    "${FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT} TEXT DEFAULT CURRENT_TIMESTAMP," + // Дата добавления[m
+[31m-                    "${FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH} TEXT NOT NULL," + // Путь к изображению[m
+[31m-                    "${FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE} TEXT," + // Название фотографии[m
+[31m-                    "${FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS} TEXT);" // Теги в виде строки[m
+[32m+[m[32m                    "${BaseColumns._ID} INTEGER PRIMARY KEY AUTOINCREMENT," +[m
+[32m+[m[32m                    "${FeedReaderContract.PhotoEntry.COLUMN_NAME_DEVICE_ID} TEXT NOT NULL," +[m
+[32m+[m[32m                    "${FeedReaderContract.PhotoEntry.COLUMN_NAME_CREATED_AT} TEXT DEFAULT CURRENT_TIMESTAMP," +[m
+[32m+[m[32m                    "${FeedReaderContract.PhotoEntry.COLUMN_NAME_IMAGE_PATH} TEXT NOT NULL," +[m
+[32m+[m[32m                    "${FeedReaderContract.PhotoEntry.COLUMN_NAME_TITLE} TEXT," +[m
+[32m+[m[32m                    "${FeedReaderContract.PhotoEntry.COLUMN_NAME_TAGS} TEXT);"[m
+ [m
+         private const val SQL_DELETE_ENTRIES =[m
+             "DROP TABLE IF EXISTS ${FeedReaderContract.PhotoEntry.TABLE_NAME}"[m
+[32m+[m
+[32m+[m[32m        private const val SQL_CREATE_ALBUMS =[m
+[32m+[m[32m            "CREATE TABLE ${FeedReaderContract.AlbumEntry.TABLE_NAME} (" +[m
+[32m+[m[32m                    "${BaseColumns._ID} INTEGER PRIMARY KEY AUTOINCREMENT," +[m
+[32m+[m[32m                    "${FeedReaderContract.AlbumEntry.COLUMN_NAME_DEVICE_ID} TEXT NOT NULL," +[m
+[32m+[m[32m                    "${FeedReaderContract.AlbumEntry.COLUMN_NAME_TITLE} TEXT NOT NULL," +[m
+[32m+[m[32m                    "${FeedReaderContract.AlbumEntry.COLUMN_NAME_CREATED_AT} TEXT DEFAULT CURRENT_TIMESTAMP," +[m
+[32m+[m[32m                    "${FeedReaderContract.AlbumEntry.COLUMN_NAME_IMAGE_IDS} TEXT);"[m
+[32m+[m
+[32m+[m[32m        private const val SQL_DELETE_ALBUMS =[m
+[32m+[m[32m            "DROP TABLE IF EXISTS ${FeedReaderContract.AlbumEntry.TABLE_NAME}"[m
+     }[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/app/src/main/java/com/safiya/photogallery/Photo.kt b/app/src/main/java/com/safiya/photogallery/Photo.kt[m
+[1mindex ed38733..66d4812 100644[m
+[1m--- a/app/src/main/java/com/safiya/photogallery/Photo.kt[m
+[1m+++ b/app/src/main/java/com/safiya/photogallery/Photo.kt[m
+[36m@@ -7,9 +7,10 @@[m [mdata class Photo([m
+     val id: Long,[m
+     val deviceId: String,[m
+     val createdAt: String,[m
+[31m-    val imagePath: String, // Изменено на путь к файлу[m
+[32m+[m[32m    val imagePath: String,[m
+     val title: String,[m
+[31m-    val tags: Array<String>[m
+[32m+[m[32m    val tags: Array<String>,[m
+[32m+[m[32m    var isSelected: Boolean = false // Поле для отслеживания выбора[m
+ ) : Parcelable {[m
+     constructor(parcel: Parcel) : this([m
+         parcel.readLong(),[m
+[1mdiff --git a/app/src/main/res/layout/activity_select_photos.xml b/app/src/main/res/layout/activity_select_photos.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..f2393ed[m
+[1m--- /dev/null[m
+[1m+++ b/app/src/main/res/layout/activity_select_photos.xml[m
+[36m@@ -0,0 +1,27 @@[m
+[32m+[m[32m<LinearLayout[m
+[32m+[m[32m    xmlns:android="http://schemas.android.com/apk/res/android"[m
+[32m+[m[32m    android:id="@+id/main"[m
+[32m+[m[32m    android:layout_width="match_parent"[m
+[32m+[m[32m    android:layout_height="match_parent"[m
+[32m+[m[32m    android:orientation="vertical">[m
+[32m+[m
+[32m+[m[32m    <EditText[m
+[32m+[m[32m    android:id="@+id/album_title_edit_text"[m
+[32m+[m[32m    android:layout_width="match_parent"[m
+[32m+[m[32m    android:layout_height="wrap_content"[m
+[32m+[m[32m    android:hint="Enter album title" />[m
+[32m+[m
+[32m+[m[32m    <Button[m
+[32m+[m[32m    android:id="@+id/save_album_button"[m
+[32m+[m[32m    android:layout_width="match_parent"[m
+[32m+[m[32m    android:layout_height="wrap_content"[m
+[32m+[m[32m    android:text="Save Album" />[m
+[32m+[m
+[32m+[m[32m    <androidx.recyclerview.widget.RecyclerView[m
+[32m+[m[32m    android:id="@+id/recycler_view_photos"[m
+[32m+[m[32m    android:layout_width="match_parent"[m
+[32m+[m[32m    android:layout_height="0dp"[m
+[32m+[m[32m    android:layout_weight="1"[m
+[32m+[m[32m    android:padding="8dp" />[m
+[32m+[m
+[32m+[m[32m</LinearLayout>[m
+\ No newline at end of file[m
+[1mdiff --git a/app/src/main/res/layout/photo_item.xml b/app/src/main/res/layout/photo_item.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..6134bd2[m
+[1m--- /dev/null[m
+[1m+++ b/app/src/main/res/layout/photo_item.xml[m
+[36m@@ -0,0 +1,24 @@[m
+[32m+[m[32m<RelativeLayout[m
+[32m+[m[32m    xmlns:android="http://schemas.android.com/apk/res/android"[m
+[32m+[m[32m    android:layout_width="100dp"[m
+[32m+[m[32m    android:layout_height="wrap_content">[m
+[32m+[m
+[32m+[m[32m    <ImageView[m
+[32m+[m[32m        android:id="@+id/photo_image_view"[m
+[32m+[m[32m        android:layout_width="100dp"[m
+[32m+[m[32m        android:layout_height="100dp"[m
+[32m+[m[32m        android:layout_margin="5dp"[m
+[32m+[m[32m        android:scaleType="centerCrop"[m
+[32m+[m[32m        android:background="@drawable/rounded_corners"[m
+[32m+[m[32m        android:clipToOutline="true"/>[m
+[32m+[m
+[32m+[m[32m    <CheckBox[m
+[32m+[m[32m        android:id="@+id/photo_checkbox"[m
+[32m+[m[32m        android:layout_width="wrap_content"[m
+[32m+[m[32m        android:layout_height="wrap_content"[m
+[32m+[m[32m        android:layout_alignParentStart="true"[m
+[32m+[m[32m        android:layout_alignParentTop="true"[m
+[32m+[m[32m        android:background="@android:color/transparent"[m
+[32m+[m[32m        android:visibility="visible"/>[m
+[32m+[m
+[32m+[m[32m</RelativeLayout>[m
+\ No newline at end of file[m

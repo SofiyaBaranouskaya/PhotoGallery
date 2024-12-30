@@ -81,9 +81,9 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/coming_soon"
         android:text="Filters"
+        android:textColor="@color/white"
         android:textSize="34sp"
         android:textStyle="bold"
-        android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.126"
@@ -98,14 +98,14 @@
         android:layout_marginTop="-30dp"
         android:background="@color/white"
         android:gravity="center"
+        android:visibility="gone"
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="16dp"
         app:cardElevation="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.492"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/first_filter_container"
-        android:visibility="gone">
+        app:layout_constraintTop_toBottomOf="@+id/first_filter_container">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -116,8 +116,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="25dp">
+                android:layout_marginTop="25dp"
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/textView7"
@@ -125,8 +125,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="25dp"
                     android:fontFamily="@font/coming_soon"
-                    android:textColor="@android:color/black"
                     android:text="Since:"
+                    android:textColor="@android:color/black"
                     android:textSize="19sp" />
 
                 <EditText
@@ -134,21 +134,21 @@
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
-                    android:ems="10"
-                    android:textColor="@android:color/black"
-                    android:fontFamily="@font/coming_soon"
-                    android:focusable="false"
                     android:clickable="true"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:fontFamily="@font/coming_soon"
                     android:hint="Enter date"
                     android:inputType="date"
-                    android:maxLength="10" />
+                    android:maxLength="10"
+                    android:textColor="@android:color/black" />
 
                 <ImageView
                     android:id="@+id/icon_calendarSince"
                     android:layout_width="20dp"
                     android:layout_height="match_parent"
-                    android:layout_marginEnd="8dp"
                     android:layout_marginStart="10dp"
+                    android:layout_marginEnd="8dp"
                     android:src="@drawable/calender" />
 
             </LinearLayout>
@@ -156,8 +156,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="10dp">
+                android:layout_marginBottom="10dp"
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/textView8"
@@ -165,8 +165,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="25dp"
                     android:fontFamily="@font/coming_soon"
-                    android:textColor="@android:color/black"
                     android:text="To:"
+                    android:textColor="@android:color/black"
                     android:textSize="19sp" />
 
                 <EditText
@@ -174,29 +174,29 @@
                     android:layout_width="120dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
-                    android:ems="10"
-                    android:textColor="@android:color/black"
-                    android:fontFamily="@font/coming_soon"
-                    android:focusable="false"
                     android:clickable="true"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:fontFamily="@font/coming_soon"
                     android:hint="Enter date"
                     android:inputType="date"
-                    android:maxLength="10" />
+                    android:maxLength="10"
+                    android:textColor="@android:color/black" />
 
                 <ImageView
                     android:id="@+id/icon_calendarTo"
                     android:layout_width="20dp"
                     android:layout_height="match_parent"
-                    android:layout_marginEnd="8dp"
                     android:layout_marginStart="10dp"
+                    android:layout_marginEnd="8dp"
                     android:src="@drawable/calender" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="20dp">
+                android:layout_marginBottom="20dp"
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/buttonCancel"
@@ -204,7 +204,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="5dp"
-                    android:text="Cancel"/>
+                    android:text="Cancel" />
 
                 <Button
                     android:id="@+id/buttonConfirm"
@@ -262,12 +262,12 @@
         android:id="@+id/recyclerView3"
         android:layout_width="340dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
         android:layout_marginLeft="12dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/opened_first_container"
+        android:layout_marginTop="30dp"
+        android:scrollbars="horizontal"
         android:visibility="gone"
-        android:scrollbars="horizontal"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/opened_first_container" />
 
 
     <TextView
@@ -276,9 +276,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="There are no photo made these dates"
-        android:visibility="gone"
-        android:textSize="30dp"
         android:textAlignment="center"
+        android:textSize="30dp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/opened_first_container" />
@@ -299,21 +299,21 @@
         app:layout_constraintTop_toBottomOf="@+id/recyclerView3">
 
         <EditText
-            android:id="@+id/editTextAlbums"
+            android:id="@+id/editTextAlbumName"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="20dp"
+            android:background="@android:color/transparent"
             android:ems="10"
-            android:inputType="text"
             android:fontFamily="@font/coming_soon"
-            android:textColor="@android:color/black"
             android:hint="Enter album name ..."
-            android:textColorHint="@android:color/darker_gray"
+            android:inputType="text"
             android:padding="0dp"
-            android:background="@android:color/transparent" />
+            android:textColor="@android:color/black"
+            android:textColorHint="@android:color/darker_gray" />
 
         <ImageView
-            android:id="@+id/imageView1"
+            android:id="@+id/buttonSearchAlbum"
             android:layout_width="30dp"
             android:layout_height="match_parent"
             android:layout_gravity="end"
@@ -327,12 +327,25 @@
         android:id="@+id/recyclerView4"
         android:layout_width="340dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
         android:layout_marginLeft="12dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/second_filter_container"
+        android:layout_marginTop="30dp"
+        android:scrollbars="horizontal"
         android:visibility="gone"
-        android:scrollbars="horizontal"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/second_filter_container" />
+
+    <TextView
+        android:id="@+id/textViewNoPhotos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="There are no such album or it is empty"
+        android:textAlignment="center"
+        android:textSize="30dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/second_filter_container" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/third_filter_container"
@@ -347,21 +360,21 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.492"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/second_filter_container">
+        app:layout_constraintTop_toBottomOf="@+id/recyclerView4">
 
         <EditText
             android:id="@+id/editTextTags"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="20dp"
+            android:background="@android:color/transparent"
             android:ems="10"
-            android:inputType="text"
             android:fontFamily="@font/coming_soon"
-            android:textColor="@android:color/black"
             android:hint="Enter tags ..."
-            android:textColorHint="@android:color/darker_gray"
+            android:inputType="text"
             android:padding="0dp"
-            android:background="@android:color/transparent" />
+            android:textColor="@android:color/black"
+            android:textColorHint="@android:color/darker_gray" />
 
         <ImageView
             android:id="@+id/imageView2"
@@ -378,12 +391,12 @@
         android:id="@+id/recyclerView5"
         android:layout_width="340dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
         android:layout_marginLeft="12dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/third_filter_container"
+        android:layout_marginTop="30dp"
+        android:scrollbars="horizontal"
         android:visibility="gone"
-        android:scrollbars="horizontal"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/third_filter_container" />
 
     <TextView
         android:id="@+id/textView10"
@@ -391,9 +404,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="There are no photo with this tags"
-        android:visibility="gone"
-        android:textSize="30dp"
         android:textAlignment="center"
+        android:textSize="30dp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/third_filter_container" />

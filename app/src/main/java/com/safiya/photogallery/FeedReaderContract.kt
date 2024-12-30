@@ -11,6 +11,7 @@ object FeedReaderContract {
         const val COLUMN_NAME_IMAGE_PATH = "image_path" // Путь к изображению
         const val COLUMN_NAME_TITLE = "title"
         const val COLUMN_NAME_TAGS = "tags"
+
     }
 
     object AlbumEntry : BaseColumns {
