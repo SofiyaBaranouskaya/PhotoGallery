@@ -9,6 +9,28 @@
         android:layout_height="match_parent"
         android:scaleType="fitCenter" />
 
+    <TextView
+        android:id="@+id/textViewName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:text="Name"
+        android:textColor="@color/white"
+        android:textSize="24sp"
+        android:padding="8dp" />
+
+    <TextView
+        android:id="@+id/textViewTags"
+        android:layout_width="346dp"
+        android:layout_height="41dp"
+        android:layout_below="@+id/textViewName"
+        android:layout_marginStart="20dp"
+        android:text="#tags"
+        android:textColor="@color/white"
+        android:textSize="20dp"
+        android:padding="8dp"/>
+
     <ImageView
         android:id="@+id/button_left"
         android:layout_width="50dp"
@@ -28,4 +50,5 @@
         android:src="@drawable/arrow_right"
         android:background="@android:color/transparent"
         android:padding="16dp"/>
+
 </RelativeLayout>
